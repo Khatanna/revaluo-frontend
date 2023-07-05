@@ -1,5 +1,7 @@
+// @ts-ignore
 import Autosuggest from "react-autosuggest";
 import Swal from "sweetalert2";
+// @ts-ignore
 import swal from "@sweetalert/with-react";
 import Activo from "./Activo";
 import { useState } from "react";
@@ -86,14 +88,14 @@ const SuggestCodigos = () => {
       <Autosuggest
         suggestions={codigos}
         onSuggestionsFetchRequested={onSuggestionsFetchRequested}
-        onSuggestionSelected={(e, { suggestion, method }) => {
+        onSuggestionSelected={(_: any, { suggestion, method }: any) => {
           if (method === "enter") {
             handleSelectedItem(suggestion);
           }
         }}
         onSuggestionsClearRequested={() => setCodigos([])}
-        getSuggestionValue={(suggestion) => suggestion.codigo}
-        renderSuggestion={(suggestion) => (
+        getSuggestionValue={(suggestion: any) => suggestion.codigo}
+        renderSuggestion={(suggestion: any) => (
           <div
             className="px-2"
             onClick={() => {
@@ -108,7 +110,7 @@ const SuggestCodigos = () => {
           value: codigo,
           inputMode: "numeric",
           pattern: "[0-9]*",
-          onChange: (e, { newValue }) => {
+          onChange: (_: any, { newValue }: any) => {
             setCodigo(newValue);
           },
         }}

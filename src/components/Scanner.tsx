@@ -1,12 +1,11 @@
 import { useEffect, useRef } from "react";
-// import { Container, Row, Col } from "react-bootstrap";
+// @ts-ignore
 import { BarcodeScanner } from "dynamsoft-javascript-barcode";
 import socket from "../socket";
 import "../dbr";
 import Swal from "sweetalert2";
 
 const VideoDecode = () => {
-  const pScannerRef = useRef(null);
   const elRef = useRef(null);
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { Row, Col, Spinner } from "react-bootstrap";
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { IActivo } from "../types";
 import BarcodeActivo from "./BarcodeActivo";
 import { useInfiniteQuery } from "@tanstack/react-query";

@@ -1,7 +1,6 @@
 import { Container, Form, Button, Row, Col, Spinner } from "react-bootstrap";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import Swal from "sweetalert2";
 
 const API_URL = import.meta.env.VITE_API_URL as string;

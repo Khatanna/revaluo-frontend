@@ -1,5 +1,3 @@
-import Swal from "sweetalert2";
-import { useState } from "react";
 import { Form } from "react-bootstrap";
 
 const pisos = [

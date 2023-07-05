@@ -1,5 +1,6 @@
-import { Row, Col } from "react-bootstrap";
+import { Col } from "react-bootstrap";
 import { type IActivoRegistrado } from "../types";
+// @ts-ignore
 import swal from "@sweetalert/with-react";
 import Swal from "sweetalert2";
 import BarcodeActivo from "./BarcodeActivo";

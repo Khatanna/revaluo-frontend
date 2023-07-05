@@ -42,7 +42,7 @@ const Home = () => {
     setActivosRegistrados(data.activosRegistrados);
   };
 
-  socket.on("activo@registrado", (activo, user) => {
+  socket.on("activo@registrado", () => {
     // TODO: mostrar mensaje de registrado con swal
     setScannerVisible(false);
     fetchActivosRegistrados();
