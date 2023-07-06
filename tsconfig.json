@@ -22,5 +22,8 @@
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }],
-  "files": ["./node_modules/sweetalert2/sweetalert2.d.ts"]
+  "files": [
+    "./node_modules/sweetalert/typings/sweetalert.d.ts",
+    "./node_modules/sweetalert2/sweetalert2.d.ts"
+  ]
 }
