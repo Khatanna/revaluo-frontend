@@ -105,6 +105,7 @@ const SuggestCodigos = () => {
             {suggestion.codigo}
           </div>
         )}
+        onKeyDown={(e) => console.log(e.key)}
         inputProps={{
           placeholder: "Codigo",
           value: codigo,
@@ -112,6 +113,11 @@ const SuggestCodigos = () => {
           pattern: "[0-9]*",
           onChange: (_: any, { newValue }: any) => {
             setCodigo(newValue);
+          },
+          onKeyDown: (e: any) => {
+            if (e.key === "Enter") {
+              handleSelectedItem({ codigo: e.target.value.trim() });
+            }
           },
         }}
       />
