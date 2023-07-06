@@ -62,14 +62,6 @@ const Home = () => {
 
       setEscaneados([...escaneados, activo]);
       setCodigo("");
-
-      Swal.fire({
-        icon: "success",
-        title: activo.codigo,
-        text: "Encontrado",
-        confirmButtonColor: "green",
-        confirmButtonText: "Continuar",
-      });
     } catch (error) {
       Swal.showValidationMessage(`Error de escaneo: ${error}`);
     }
@@ -85,7 +77,12 @@ const Home = () => {
   };
 
   socket.on("activo@registrado", () => {
-    // TODO: mostrar mensaje de registrado con swal
+    Swal.fire({
+      icon: "success",
+      title: "title",
+      confirmButtonColor: "green",
+      confirmButtonText: "Continuar",
+    });
     setScannerVisible(false);
     fetchActivosRegistrados();
   });
