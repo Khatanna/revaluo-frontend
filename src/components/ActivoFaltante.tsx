@@ -53,7 +53,12 @@ const ActivoFaltante = () => {
     [data]
   );
 
-  if (status === "loading") return <Spinner />;
+  if (status === "loading")
+    return (
+      <div className="position-absolute top-50 start-50 translate-middle-x">
+        <Spinner />
+      </div>
+    );
 
   if (status === "error") return <h4>Ups!, {`${error}` as string}</h4>;
 

@@ -1,4 +1,12 @@
-import { Container, Row, Col, Button, Modal, Form } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Button,
+  Modal,
+  Form,
+  Spinner,
+} from "react-bootstrap";
 import { useState, useEffect } from "react";
 import SuggestCodigos from "../components/SuggestCodigos";
 import Scanner from "../components/Scanner";
@@ -7,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import ActivoRegistrado from "../components/ActivoRegistrado";
 import { IActivo, IActivoRegistrado, IUsuario } from "../types";
 import socket from "../socket";
+import { useQuery } from "@tanstack/react-query";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -14,13 +23,21 @@ const Home = () => {
   const navigate = useNavigate();
   const [scannerVisible, setScannerVisible] = useState(false);
   const [show, setShow] = useState(false);
-  const [activosRegistrados, setActivosRegistrados] = useState<
-    IActivoRegistrado[]
-  >([]);
+  // const [activosRegistrados, setActivosRegistrados] = useState<
+  //   IActivoRegistrado[]
+  // >([]);
   const [usuarios, setUsuarios] = useState([]);
   const [escaneados, setEscaneados] = useState<IActivo[]>([]);
   const [codigo, setCodigo] = useState("");
   const [filter, setFilter] = useState("all");
+
+  const {
+    data: activosRegistrados,
+    error,
+    isLoading,
+  } = useQuery<IActivoRegistrado[]>(["activos-registrados"], {
+    queryFn: () => fetchActivosRegistrados(),
+  });
 
   const me = JSON.parse(window.localStorage.getItem("user") as string);
 
@@ -33,16 +50,19 @@ const Home = () => {
 
   const fetchActivosRegistrados = async () => {
     const response = await fetch(`${API_URL}/activos-registrados`);
-    const data = await response.json();
+    const {
+      activosRegistrados,
+    }: { activosRegistrados: Awaited<IActivoRegistrado[]> } =
+      await response.json();
 
-    setActivosRegistrados(data.activosRegistrados);
+    return activosRegistrados;
   };
 
   const fetchActivosRegistradosByUserId = async (userId: string) => {
     const response = await fetch(`${API_URL}/activos-registrados/${userId}`);
     const data = await response.json();
 
-    setActivosRegistrados(data.activosRegistrados);
+    // setActivosRegistrados(data.activosRegistrados);
   };
 
   const handleZebra = async (codigo: string) => {
@@ -79,7 +99,7 @@ const Home = () => {
   socket.on("activo@registrado", () => {
     Swal.fire({
       icon: "success",
-      title: "title",
+      title: "Registrado",
       confirmButtonColor: "green",
       confirmButtonText: "Continuar",
     });
@@ -150,11 +170,23 @@ const Home = () => {
     }
   }, [navigate, filter]);
 
+  if (isLoading) {
+    return (
+      <div className="position-absolute top-50 start-50 translate-middle-x">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div>Error al obtener los datos</div>;
+  }
+
   return (
     <>
       <Container fluid>
         <Row className="justify-content-center mt-3">
-          <Col xs={10} sm={8} md={6} lg={4}>
+          <Col xs={12} sm={8} md={6} lg={4}>
             <Row>
               <Col>
                 <SuggestCodigos />
@@ -178,8 +210,8 @@ const Home = () => {
           </Col>
         </Row>
         <Row className="justify-content-center">
-          <Col xs={10} sm={8} md={6} lg={4}>
-            {activosRegistrados.map((activoRegistrado) => (
+          <Col xs={12} sm={8} md={6} lg={4}>
+            {activosRegistrados?.map((activoRegistrado) => (
               <ActivoRegistrado
                 activoRegistrado={activoRegistrado}
                 key={crypto.randomUUID()}
@@ -188,7 +220,7 @@ const Home = () => {
           </Col>
         </Row>
         <Row className="justify-content-center">
-          <Col xs={10} sm={8} md={6} lg={4}>
+          <Col xs={12} sm={8} md={6} lg={4}>
             <div className="m-3 shadow-lg position-fixed bottom-0 end-0">
               <Button
                 variant={"success"}

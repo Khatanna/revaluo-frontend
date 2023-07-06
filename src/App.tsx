@@ -25,7 +25,7 @@ function App() {
 
   return (
     <>
-      <Navbar expand="lg" className="bg-body-tertiary">
+      <Navbar expand="lg" className="bg-body-tertiary" sticky="top">
         <Container>
           <Navbar.Brand href="#home" className="lh-lg">
             <img
