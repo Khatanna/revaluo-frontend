@@ -40,7 +40,7 @@ const Login = () => {
         });
         const { token, isAuth, user } = await response.json();
         document.cookie = `token=${token}; max-age=${
-          60 * 15
+          60 * 60 * 60
         }; path=/; samesite=strict`;
 
         if (isAuth) {

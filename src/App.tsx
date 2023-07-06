@@ -1,8 +1,10 @@
-import { Button, Navbar, Container } from "react-bootstrap";
+import { Button, Navbar, Container, Nav, Col } from "react-bootstrap";
 import "./index.css";
 import { Link, Outlet } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import NavbarCollapse from "react-bootstrap/esm/NavbarCollapse";
+import logo from "./assets/logo.png";
 
 function App() {
   const location = useLocation();
@@ -23,26 +25,50 @@ function App() {
 
   return (
     <>
-      <Navbar className="shadow-md border border-bottom">
-        <Container fluid>
-          <Link
-            to={path === "/" ? "/config" : "/"}
-            className="text-decoration-none me-3"
-          >
-            {path === "/" ? "Configuraciones" : "Inicio"}
-          </Link>
-          <Link to={"/activos-faltantes"} className="text-decoration-none">
-            Activos faltantes
-          </Link>
-          <Button
-            onClick={handleLogout}
-            variant="danger"
-            className="float-end ms-auto"
-          >
-            Cerrar sesión
-          </Button>
+      <Navbar expand="lg" className="bg-body-tertiary">
+        <Container>
+          <Navbar.Brand href="#home" className="lh-lg">
+            <img
+              src={logo}
+              alt="logo"
+              width={30}
+              className="d-d-inline-block align-top"
+            />{" "}
+            Revaluo 2023
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <NavbarCollapse id="basic-navbar-nav">
+            <Nav className="justify-content-center">
+              <Nav.Item className="mx-auto">
+                <Nav.Link>
+                  <Link
+                    to={path === "/" ? "/config" : "/"}
+                    className="text-decoration-none"
+                  >
+                    {path === "/" ? "Configuraciones" : "Inicio"}
+                  </Link>
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item className="mx-auto">
+                <Nav.Link>
+                  <Link
+                    to={"/activos-faltantes"}
+                    className="text-decoration-none"
+                  >
+                    Activos faltantes
+                  </Link>
+                </Nav.Link>
+              </Nav.Item>
+            </Nav>
+            <Col className="ms-auto" xs={12} md={3} lg={2}>
+              <Button onClick={handleLogout} variant="danger" className="w-100">
+                Cerrar sesión
+              </Button>
+            </Col>
+          </NavbarCollapse>
         </Container>
       </Navbar>
+
       <Outlet />
     </>
   );

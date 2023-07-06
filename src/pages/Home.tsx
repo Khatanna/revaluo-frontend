@@ -244,7 +244,6 @@ const Home = () => {
                       type="text"
                       placeholder="Escaneé un codigo"
                       value={codigo}
-                      readOnly
                       onChange={(e) => setCodigo(e.target.value)}
                     />
                   </Col>
