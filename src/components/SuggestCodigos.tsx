@@ -105,7 +105,6 @@ const SuggestCodigos = () => {
             {suggestion.codigo}
           </div>
         )}
-        onKeyDown={(e) => console.log(e.key)}
         inputProps={{
           placeholder: "Codigo",
           value: codigo,
