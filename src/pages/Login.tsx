@@ -17,10 +17,7 @@ const Login = () => {
     md: 6,
     lg: 4,
   };
-  // const { error, isLoading, data } = useQuery({
-  //   queryKey: ['login'],
-  //   queryFn:
-  // });
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 

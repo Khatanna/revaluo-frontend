@@ -16,10 +16,13 @@ const API_URL = import.meta.env.VITE_API_URL;
 const Home = () => {
   const navigate = useNavigate();
   const [scannerVisible, setScannerVisible] = useState(false);
+  const [show, setShow] = useState(false);
   const [activosRegistrados, setActivosRegistrados] = useState<
     IActivoRegistrado[]
   >([]);
   const [usuarios, setUsuarios] = useState([]);
+  const [escaneados, setEscaneados] = useState<IActivo[]>([]);
+  const [codigo, setCodigo] = useState("");
   const [filter, setFilter] = useState("all");
 
   const me = JSON.parse(window.localStorage.getItem("user") as string);
@@ -45,67 +48,42 @@ const Home = () => {
     setActivosRegistrados(data.activosRegistrados);
   };
 
-  const handleZebra = () => {
-    Swal.fire({
-      title: "Ingrese el codigo",
-      input: "text",
-      inputAttributes: {
-        autocapitalize: "off",
-      },
-      showCancelButton: true,
-      cancelButtonColor: "red",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "green",
-      confirmButtonText: "Buscar",
-      showLoaderOnConfirm: true,
-      preConfirm: (codigo) => {
-        const token = document.cookie.split(";").at(-1) as string;
-        // const { activo } = await response.json();
+  const handleZebra = async (codigo: string) => {
+    const token = document.cookie.split(";").at(-1) as string;
 
-        return fetch(`${API_URL}/activo/${codigo}`, {
-          headers: {
-            authorization: token,
-          },
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(response.statusText);
-            }
-            return response.json();
-          })
-          .catch((error) => {
-            Swal.showValidationMessage(`Error de escaneo: ${error}`);
-          });
-      },
-      allowOutsideClick: () => !Swal.isLoading(),
-    }).then(({ isConfirmed, value }) => {
-      if (isConfirmed) {
-        const activo = value.activo as IActivo;
-
-        swal(<Activo activo={activo} />, {
-          buttons: {
-            confirm: {
-              text: "Registrar",
-              className: "btn-confirm",
-            },
-            cancel: {
-              text: "Cancelar",
-              value: false,
-              visible: true,
-              className: "btn-cancel",
-              closeModal: true,
-            },
-          },
-        }).then((value: boolean) => {
-          if (value) {
-            const user = JSON.parse(localStorage.getItem("user") as string);
-            const { piso } = JSON.parse(
-              localStorage.getItem("config") as string
-            );
-            socket.emit("activo@registrado", activo.codigo, user, piso);
-          }
-        });
+    try {
+      const response = await fetch(`${API_URL}/activo/${codigo}`, {
+        headers: {
+          authorization: token,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(response.statusText);
       }
+
+      const { activo } = await response.json();
+
+      setEscaneados([...escaneados, activo]);
+      setCodigo("");
+
+      Swal.fire({
+        icon: "success",
+        title: activo.codigo,
+        text: "Encontrado",
+        confirmButtonColor: "green",
+        confirmButtonText: "Continuar",
+      });
+    } catch (error) {
+      Swal.showValidationMessage(`Error de escaneo: ${error}`);
+    }
+  };
+
+  const handleRegisterMany = async () => {
+    const user = JSON.parse(localStorage.getItem("user") as string);
+    const { piso } = JSON.parse(localStorage.getItem("config") as string);
+
+    escaneados.forEach((activo) => {
+      socket.emit("activo@registrado", activo.codigo, user, piso);
     });
   };
 
@@ -218,12 +196,14 @@ const Home = () => {
         <Row className="justify-content-center">
           <Col xs={10} sm={8} md={6} lg={4}>
             <div className="m-3 shadow-lg position-fixed bottom-0 end-0">
-              <Button variant={"success"} className="" onClick={handleZebra}>
+              <Button
+                variant={"success"}
+                className=""
+                onClick={() => setShow(true)}
+              >
                 Zebra
               </Button>
               <Button
-                data-bs-toggle="modal"
-                data-bs-target="#staticBackdrop"
                 onClick={() => setScannerVisible(true)}
                 variant={"primary"}
                 className="ms-1"
@@ -237,6 +217,8 @@ const Home = () => {
               onHide={() => setScannerVisible(false)}
               backdrop="static"
               keyboard={false}
+              centered
+              size="lg"
             >
               <Modal.Header closeButton>
                 <Modal.Title>Escaner</Modal.Title>
@@ -248,6 +230,52 @@ const Home = () => {
                   onClick={() => setScannerVisible(false)}
                 >
                   Cerrar escaner
+                </Button>
+              </Modal.Footer>
+            </Modal>
+
+            <Modal
+              show={show}
+              onHide={() => setShow(false)}
+              backdrop="static"
+              keyboard={false}
+              centered
+              size="lg"
+            >
+              <Modal.Header closeButton></Modal.Header>
+              <Modal.Body>
+                <Row>
+                  <Col xs={9}>
+                    <Form.Control
+                      type="text"
+                      placeholder="Escaneé un codigo"
+                      value={codigo}
+                      onChange={(e) => setCodigo(e.target.value)}
+                    />
+                  </Col>
+                  <Col xs={3}>
+                    <Button
+                      className="w-100"
+                      onClick={() => handleZebra(codigo)}
+                    >
+                      Listo
+                    </Button>
+                  </Col>
+                  <Col>
+                    {escaneados.map((activo) => (
+                      <div className="border rounded-1 p-1 my-1 bg-primary-subtle">
+                        {activo.codigo}
+                      </div>
+                    ))}
+                  </Col>
+                </Row>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="danger" onClick={() => setShow(false)}>
+                  Cerrar
+                </Button>
+                <Button variant="success" onClick={handleRegisterMany}>
+                  Registrar todos
                 </Button>
               </Modal.Footer>
             </Modal>
