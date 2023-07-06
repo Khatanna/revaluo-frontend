@@ -8,6 +8,7 @@ import ActivoRegistrado from "../components/ActivoRegistrado";
 import { IActivo, IActivoRegistrado, IUsuario } from "../types";
 import socket from "../socket";
 import Activo from "../components/Activo";
+// @ts-ignore
 import swal from "@sweetalert/with-react";
 
 const API_URL = import.meta.env.VITE_API_URL;
