@@ -13,7 +13,7 @@ const Activo = ({ activo }: { activo: IActivo }) => {
   return (
     <>
       <div>
-        <div className="my-2 border border-1 rounded-1 p-4 text-start">
+        <div className="my-2 border border-1 rounded-1 p-2 text-start">
           <div>
             <strong>Responsable:</strong>{" "}
             <span className="text-decoration-underline">

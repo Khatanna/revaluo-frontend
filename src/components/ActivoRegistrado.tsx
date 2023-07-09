@@ -1,9 +1,11 @@
 import { Col } from "react-bootstrap";
 import { type IActivoRegistrado } from "../types";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import swal from "@sweetalert/with-react";
 import Swal from "sweetalert2";
 import BarcodeActivo from "./BarcodeActivo";
+import { useAuthStore } from "../store/useAuthStore";
 
 const ActivoRegistrado = ({
   activoRegistrado,
@@ -11,7 +13,7 @@ const ActivoRegistrado = ({
   activoRegistrado: IActivoRegistrado;
 }) => {
   const { activoFijo, usuario, piso } = activoRegistrado;
-  const me = JSON.parse(window.localStorage.getItem("user") as string);
+  const { user } = useAuthStore((state) => state);
   const condicion: { [index: string]: string } = {
     nuevo: "success",
     bueno: "primary",
@@ -23,6 +25,7 @@ const ActivoRegistrado = ({
   const style: { [index: string]: string } = {
     backgroundColor: usuario.color,
     fontSize: "0.8rem",
+    cursor: "pointer",
   };
 
   const showCode = () => {
@@ -30,8 +33,7 @@ const ActivoRegistrado = ({
       buttons: {
         confirm: {
           text: "Copiar Codigo",
-          className: "btn-confirm",
-          // closeModal: false,
+          className: "btn btn-sm btn-primary",
           value: true,
           visible: true,
         },
@@ -39,7 +41,7 @@ const ActivoRegistrado = ({
           text: "Continuar",
           value: false,
           visible: true,
-          className: "btn-cancel",
+          className: "btn btn-sm btn-success",
           closeModal: true,
         },
       },
@@ -81,11 +83,15 @@ const ActivoRegistrado = ({
         <div
           style={style}
           className="mt-3 border border-1 rounded-1 p-1 text-start position-relative"
+          onClick={showCode}
         >
           <div className="position-absolute top-0 start-50  rounded-pill bg-dark text-white translate-middle badge mb-1">
-            {me.nombre === usuario.nombre ? "Tu" : usuario.nombre}
+            {user?.nombre === usuario.nombre ? "Tu" : usuario.nombre} | {piso}
           </div>
           <div className="shadow px-2 py-1 rounded-1 border border-secondary-subtle">
+            <div>
+              <strong>Codigo:</strong> {activoFijo.codigo}
+            </div>
             <div>
               <strong>Responsable:</strong>{" "}
               <span className="text-decoration-underline">
@@ -95,15 +101,7 @@ const ActivoRegistrado = ({
             <div>
               <strong>Tipo:</strong> {activoFijo.tipo}
             </div>
-            <div>
-              <strong>Piso:</strong> {activoFijo.piso}
-            </div>
-            <div>
-              <strong>Ubicación:</strong> {activoFijo.ubicacion}
-            </div>
-            <div>
-              <strong>Estado:</strong> {activoFijo.estado}
-            </div>
+
             <div>
               <strong>
                 Condición:{" "}
@@ -115,16 +113,6 @@ const ActivoRegistrado = ({
                   {activoFijo.condicion}
                 </span>
               </strong>
-            </div>
-            <div>
-              <strong>Escaneado en:</strong> {piso}
-            </div>
-            <div
-              onClick={showCode}
-              style={{ cursor: "pointer" }}
-              className="text-primary text-primary link-primary"
-            >
-              Mostrar codigo
             </div>
           </div>
         </div>

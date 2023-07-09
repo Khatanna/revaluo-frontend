@@ -1,69 +1,40 @@
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  Modal,
-  Form,
-  Spinner,
-} from "react-bootstrap";
-import { useState, useEffect } from "react";
+import { Container, Row, Col, Button, Modal, Form } from "react-bootstrap";
+import { useState } from "react";
 import SuggestCodigos from "../components/SuggestCodigos";
 import Scanner from "../components/Scanner";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import Spinner from "../components/Spinner";
 import ActivoRegistrado from "../components/ActivoRegistrado";
-import { IActivo, IActivoRegistrado, IUsuario } from "../types";
+import { IActivo, IActivoRegistrado } from "../types";
 import socket from "../socket";
 import { useQuery } from "@tanstack/react-query";
-
+import axios from "axios";
+import SelectUsuarios from "../components/SelectUsuarios";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Home = () => {
-  const navigate = useNavigate();
   const [scannerVisible, setScannerVisible] = useState(false);
   const [show, setShow] = useState(false);
-  // const [activosRegistrados, setActivosRegistrados] = useState<
-  //   IActivoRegistrado[]
-  // >([]);
-  const [usuarios, setUsuarios] = useState([]);
   const [escaneados, setEscaneados] = useState<IActivo[]>([]);
   const [codigo, setCodigo] = useState("");
-  const [filter, setFilter] = useState("all");
+
+  const fetchActivosRegistrados = async () => {
+    const response = await axios.get("/activos-registrados");
+    const {
+      activosRegistrados,
+    }: { activosRegistrados: Awaited<IActivoRegistrado[]> } = response.data;
+
+    return activosRegistrados;
+  };
 
   const {
     data: activosRegistrados,
     error,
     isLoading,
-  } = useQuery<IActivoRegistrado[]>(["activos-registrados"], {
-    queryFn: () => fetchActivosRegistrados(),
-  });
-
-  const me = JSON.parse(window.localStorage.getItem("user") as string);
-
-  const fetchUsuarios = async () => {
-    const response = await fetch(`${API_URL}/users`);
-    const data = await response.json();
-
-    setUsuarios(data.users);
-  };
-
-  const fetchActivosRegistrados = async () => {
-    const response = await fetch(`${API_URL}/activos-registrados`);
-    const {
-      activosRegistrados,
-    }: { activosRegistrados: Awaited<IActivoRegistrado[]> } =
-      await response.json();
-
-    return activosRegistrados;
-  };
-
-  const fetchActivosRegistradosByUserId = async (userId: string) => {
-    const response = await fetch(`${API_URL}/activos-registrados/${userId}`);
-    const data = await response.json();
-
-    // setActivosRegistrados(data.activosRegistrados);
-  };
+  } = useQuery<IActivoRegistrado[]>(
+    ["activos-registrados"],
+    fetchActivosRegistrados
+  );
 
   const handleZebra = async (codigo: string) => {
     const token = document.cookie.split(";").at(-1) as string;
@@ -104,11 +75,11 @@ const Home = () => {
       confirmButtonText: "Continuar",
     });
     setScannerVisible(false);
-    fetchActivosRegistrados();
+    // fetchActivosRegistrados();
   });
 
   socket.on("usuario@actualizado", () => {
-    fetchActivosRegistrados();
+    // fetchActivosRegistrados();
   });
 
   socket.on("activo@registrado-error", (user, piso, message, duplicado) => {
@@ -149,33 +120,8 @@ const Home = () => {
     });
   });
 
-  useEffect(() => {
-    const config = localStorage.getItem("config");
-
-    if (!config) {
-      Swal.fire({
-        icon: "info",
-        title: "Debe configurar antes de iniciar",
-        confirmButtonText: "Configurar",
-      });
-
-      navigate("/config");
-    } else {
-      if (filter === "all") {
-        fetchActivosRegistrados();
-        fetchUsuarios();
-      } else {
-        fetchActivosRegistradosByUserId(filter);
-      }
-    }
-  }, [navigate, filter]);
-
   if (isLoading) {
-    return (
-      <div className="position-absolute top-50 start-50 translate-middle-x">
-        <Spinner />
-      </div>
-    );
+    return <Spinner variant="primary" />;
   }
 
   if (error) {
@@ -192,19 +138,7 @@ const Home = () => {
                 <SuggestCodigos />
               </Col>
               <Col>
-                <Form.Select
-                  onChange={(e) => setFilter(e.target.value)}
-                  placeholder="Filtrar por usuario"
-                  value={filter}
-                >
-                  <option disabled>Filtrar por usuario</option>
-                  <option value="all">Ver todos</option>
-                  {usuarios.map((usuario: IUsuario) => (
-                    <option value={usuario.id} key={crypto.randomUUID()}>
-                      {usuario.id === me.id ? "Tú" : usuario.nombre}
-                    </option>
-                  ))}
-                </Form.Select>
+                <SelectUsuarios />
               </Col>
             </Row>
           </Col>
@@ -234,7 +168,7 @@ const Home = () => {
                 variant={"primary"}
                 className="ms-1"
               >
-                Abrir escaner
+                Escaner
               </Button>
             </div>
 

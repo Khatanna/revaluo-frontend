@@ -20,3 +20,17 @@ export interface IActivoRegistrado {
   usuario: IUsuario,
   piso: string
 }
+
+export interface IAuthResponse {
+  token: string;
+  user: IUsuario;
+}
+
+export interface IUserResponse {
+  users: Pick<IUsuario, 'id' | 'nombre'>[];
+}
+
+export interface IForm {
+  [index: string]: string;
+}
+

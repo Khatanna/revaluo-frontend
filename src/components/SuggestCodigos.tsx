@@ -5,21 +5,19 @@ import Swal from "sweetalert2";
 import swal from "@sweetalert/with-react";
 import Activo from "./Activo";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import socket from "../socket";
+import { useAuthStore } from "../store/useAuthStore";
 
 const API_URL = import.meta.env.VITE_API_URL as string;
 
 const SuggestCodigos = () => {
   const [codigos, setCodigos] = useState<{ codigo: string }[]>([]);
   const [codigo, setCodigo] = useState("INRA-");
-  const navigate = useNavigate();
-
+  const { token } = useAuthStore((state) => state);
   const onSuggestionsFetchRequested = async ({
     value,
   }: Autosuggest.SuggestionsFetchRequestedParams) => {
     try {
-      const token = document.cookie.split(";").at(-1) as string;
       const response = await fetch(`${API_URL}/activos/${value}`, {
         headers: {
           authorization: token,
@@ -34,11 +32,7 @@ const SuggestCodigos = () => {
           title: "La sesión expiro inicie sesión nuevamente",
           confirmButtonText: "Iniciar sesión",
         });
-        document.cookie =
-          "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        window.localStorage.removeItem("auth");
-
-        navigate("/login");
+        // navigate("/login");
       }
     } catch (e) {
       setCodigos([]);
