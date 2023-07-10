@@ -11,6 +11,8 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import SelectUsuarios from "../components/SelectUsuarios";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { Endpoint, SocketEvent } from "../constants/endpoints";
+import { useAuthStore } from "../store/useAuthStore";
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface IActivosRegistradosResponse {
@@ -37,14 +39,14 @@ const Home = () => {
   const [show, setShow] = useState(false);
   const [escaneados, setEscaneados] = useState<IActivo[]>([]);
   const [codigo, setCodigo] = useState("");
-
-  const { data, error, fetchNextPage, hasNextPage, isInitialLoading } =
+  const { user } = useAuthStore((state) => state);
+  const { data, error, fetchNextPage, hasNextPage, isInitialLoading, refetch } =
     useInfiniteQuery<AxiosResponse<IActivosRegistradosResponse>, Error>(
       ["activos-registrados"],
       async ({ pageParam = 1 }) => await fetchActivosRegistrados(pageParam),
       {
         getNextPageParam: (
-          lastPage: AxiosResponse<IActivosRegistradosResponse>,
+          lastPage: AxiosResponse<IActivosRegistradosResponse>
         ) => {
           if (lastPage.data.next) {
             const { searchParams } = new URL(lastPage.data.next);
@@ -56,7 +58,7 @@ const Home = () => {
           return undefined;
         },
         getPreviousPageParam: (
-          lastPage: AxiosResponse<IActivosRegistradosResponse>,
+          lastPage: AxiosResponse<IActivosRegistradosResponse>
         ) => {
           if (lastPage.data.prev) {
             const { searchParams } = new URL(lastPage.data.prev);
@@ -68,7 +70,7 @@ const Home = () => {
           return undefined;
         },
         cacheTime: 0,
-      },
+      }
     );
 
   const handleZebra = async (codigo: string) => {
@@ -94,10 +96,12 @@ const Home = () => {
   };
 
   const handleRegisterMany = async () => {
-    escaneados.forEach((activo) => {
-      console.log({ activo });
-      // socket.emit("activo@registrado", activo.codigo, user, piso);
+    const response = await axios.post(Endpoint.REGISTER_MANY_ACTIVO, {
+      activos: escaneados,
+      user,
     });
+
+    console.log({ response, data: response.data });
     setEscaneados([]);
   };
 
@@ -105,19 +109,17 @@ const Home = () => {
     setEscaneados(escaneados.filter((e) => e.codigo !== codigo));
   };
 
-  socket.on("activo@registrado", () => {
-    Swal.fire({
-      icon: "success",
-      title: "Registrado",
-      confirmButtonColor: "green",
-      confirmButtonText: "Continuar",
-    });
-    setScannerVisible(false);
-    // fetchActivosRegistrados();
-  });
+  // socket.on(SocketEvent.REGISTER, () => {
+  //   Swal.fire({
+  //     icon: "success",
+  //     title: "Activo registrado",
+  //     confirmButtonColor: "green",
+  //     confirmButtonText: "Continuar",
+  //   });
+  // });
 
-  socket.on("usuario@actualizado", () => {
-    // fetchActivosRegistrados();
+  socket.on(SocketEvent.REGISTER_MANY_ACTIVO, () => {
+    refetch();
   });
 
   socket.on("activo@registrado-error", (user, piso, message, duplicado) => {
@@ -146,13 +148,13 @@ const Home = () => {
         swalWithBootstrapButtons.fire(
           "Registrado!",
           "Este activo se registro como sobrante.",
-          "success",
+          "success"
         );
       } else if (result.dismiss === Swal.DismissReason.cancel) {
         swalWithBootstrapButtons.fire(
           "Cancelado",
           "Este activo no se registro como sobrante",
-          "error",
+          "error"
         );
       }
     });
@@ -168,7 +170,7 @@ const Home = () => {
           },
         };
       }),
-    [data],
+    [data]
   );
 
   if (isInitialLoading) {

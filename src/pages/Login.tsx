@@ -21,7 +21,7 @@ const Login = () => {
   const [validated, setValidated] = useState(false);
   const { isAuth } = useAuthStore((state) => state);
   const [form, setForm] = useState<IForm>(initialForm);
-  const { login, isLoading } = useAuth();
+  const { login, isLoadingLogin } = useAuth();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,51 +44,51 @@ const Login = () => {
     return <Navigate to="/" />;
   }
 
+  if (isLoadingLogin) {
+    return <Spinner variant="success" />;
+  }
+
   return (
     <>
-      {isLoading ? (
-        <Spinner variant="success" />
-      ) : (
-        <Container fluid>
-          <Row className="vh-100 align-content-center justify-content-center">
-            <Col
-              xs={breakPoints.xs}
-              sm={breakPoints.sm}
-              md={breakPoints.md}
-              lg={breakPoints.lg}
+      <Container fluid>
+        <Row className="vh-100 align-content-center justify-content-center">
+          <Col
+            xs={breakPoints.xs}
+            sm={breakPoints.sm}
+            md={breakPoints.md}
+            lg={breakPoints.lg}
+          >
+            <Form
+              className="d-flex flex-column gap-2"
+              onSubmit={handleSubmit}
+              noValidate
+              validated={validated}
             >
-              <Form
-                className="d-flex flex-column gap-2"
-                onSubmit={handleSubmit}
-                noValidate
-                validated={validated}
-              >
-                <Col>
-                  <h1 className="text-center">Iniciar sesión</h1>
-                </Col>
-                <Col>
-                  <Form.Control
-                    required
-                    placeholder="Nombre"
-                    type="text"
-                    name="nombre"
-                    onChange={(e) => setForm({ nombre: e.target.value })}
-                    value={form.nombre}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    Debe ingresar su nombre
-                  </Form.Control.Feedback>
-                </Col>
-                <Col>
-                  <Button type="submit" variant="success" className="float-end">
-                    Iniciar sesión
-                  </Button>
-                </Col>
-              </Form>
-            </Col>
-          </Row>
-        </Container>
-      )}
+              <Col>
+                <h1 className="text-center">Iniciar sesión</h1>
+              </Col>
+              <Col>
+                <Form.Control
+                  required
+                  placeholder="Nombre"
+                  type="text"
+                  name="nombre"
+                  onChange={(e) => setForm({ nombre: e.target.value })}
+                  value={form.nombre}
+                />
+                <Form.Control.Feedback type="invalid">
+                  Debe ingresar su nombre
+                </Form.Control.Feedback>
+              </Col>
+              <Col>
+                <Button type="submit" variant="success" className="float-end">
+                  Iniciar sesión
+                </Button>
+              </Col>
+            </Form>
+          </Col>
+        </Row>
+      </Container>
     </>
   );
 };

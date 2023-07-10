@@ -15,4 +15,13 @@ export const fetchLogin = async (
     }
 };
 
+export const fetchLogout = async (token: string) => {
+    try {
+        const response = await axios.post(Endpoint.LOGOUT, undefined, { headers: { Authorization: token } })
+
+        return response;
+    } catch (e) {
+        throw e as AxiosError;
+    }
+}
 
