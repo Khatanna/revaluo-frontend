@@ -1,5 +1,5 @@
 import { Container, Row, Col, Button, Modal, Form } from "react-bootstrap";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import SuggestCodigos from "../components/SuggestCodigos";
 import Scanner from "../components/Scanner";
 import Swal from "sweetalert2";
@@ -7,10 +7,30 @@ import Spinner from "../components/Spinner";
 import ActivoRegistrado from "../components/ActivoRegistrado";
 import { IActivo, IActivoRegistrado } from "../types";
 import socket from "../socket";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import SelectUsuarios from "../components/SelectUsuarios";
+import InfiniteScroll from "react-infinite-scroll-component";
 const API_URL = import.meta.env.VITE_API_URL;
+
+interface IActivosRegistradosResponse {
+  prev: string;
+  next: string;
+  page: number;
+  results: IActivoRegistrado[];
+}
+
+const fetchActivosRegistrados = async (page: number) => {
+  const response = await axios.get("/activos-registrados", {
+    params: {
+      page,
+      limit: 10,
+    },
+  });
+  // const { results }: { results: Awaited<IActivoRegistrado[]> } = response.data;
+
+  return response;
+};
 
 const Home = () => {
   const [scannerVisible, setScannerVisible] = useState(false);
@@ -18,23 +38,38 @@ const Home = () => {
   const [escaneados, setEscaneados] = useState<IActivo[]>([]);
   const [codigo, setCodigo] = useState("");
 
-  const fetchActivosRegistrados = async () => {
-    const response = await axios.get("/activos-registrados");
-    const {
-      activosRegistrados,
-    }: { activosRegistrados: Awaited<IActivoRegistrado[]> } = response.data;
+  const { data, error, fetchNextPage, hasNextPage, isInitialLoading } =
+    useInfiniteQuery<AxiosResponse<IActivosRegistradosResponse>, Error>(
+      ["activos-registrados"],
+      async ({ pageParam = 1 }) => await fetchActivosRegistrados(pageParam),
+      {
+        getNextPageParam: (
+          lastPage: AxiosResponse<IActivosRegistradosResponse>,
+        ) => {
+          if (lastPage.data.next) {
+            const { searchParams } = new URL(lastPage.data.next);
+            const page = parseInt(searchParams.get("page") as string);
 
-    return activosRegistrados;
-  };
+            return page;
+          }
 
-  const {
-    data: activosRegistrados,
-    error,
-    isLoading,
-  } = useQuery<IActivoRegistrado[]>(
-    ["activos-registrados"],
-    fetchActivosRegistrados
-  );
+          return undefined;
+        },
+        getPreviousPageParam: (
+          lastPage: AxiosResponse<IActivosRegistradosResponse>,
+        ) => {
+          if (lastPage.data.prev) {
+            const { searchParams } = new URL(lastPage.data.prev);
+            const page = parseInt(searchParams.get("page") as string);
+
+            return page;
+          }
+
+          return undefined;
+        },
+        cacheTime: 0,
+      },
+    );
 
   const handleZebra = async (codigo: string) => {
     const token = document.cookie.split(";").at(-1) as string;
@@ -59,12 +94,15 @@ const Home = () => {
   };
 
   const handleRegisterMany = async () => {
-    const user = JSON.parse(localStorage.getItem("user") as string);
-    const { piso } = JSON.parse(localStorage.getItem("config") as string);
-
     escaneados.forEach((activo) => {
-      socket.emit("activo@registrado", activo.codigo, user, piso);
+      console.log({ activo });
+      // socket.emit("activo@registrado", activo.codigo, user, piso);
     });
+    setEscaneados([]);
+  };
+
+  const deleteEscaneado = (codigo: string) => {
+    setEscaneados(escaneados.filter((e) => e.codigo !== codigo));
   };
 
   socket.on("activo@registrado", () => {
@@ -108,24 +146,42 @@ const Home = () => {
         swalWithBootstrapButtons.fire(
           "Registrado!",
           "Este activo se registro como sobrante.",
-          "success"
+          "success",
         );
       } else if (result.dismiss === Swal.DismissReason.cancel) {
         swalWithBootstrapButtons.fire(
           "Cancelado",
           "Este activo no se registro como sobrante",
-          "error"
+          "error",
         );
       }
     });
   });
+  const activosRegistrados = useMemo(
+    () =>
+      data?.pages.reduce((prev, page) => {
+        return {
+          ...page,
+          data: {
+            ...page.data,
+            results: [...prev.data.results, ...page.data.results],
+          },
+        };
+      }),
+    [data],
+  );
 
-  if (isLoading) {
+  if (isInitialLoading) {
+    // TODO simular lazy loading aqui
     return <Spinner variant="primary" />;
   }
 
   if (error) {
-    return <div>Error al obtener los datos</div>;
+    return (
+      <h4 className="position-absolute top-50 start-50 translate-middle-x fs-5 text-center">
+        No se encontraron los resultados
+      </h4>
+    );
   }
 
   return (
@@ -145,12 +201,29 @@ const Home = () => {
         </Row>
         <Row className="justify-content-center">
           <Col xs={12} sm={8} md={6} lg={4}>
-            {activosRegistrados?.map((activoRegistrado) => (
-              <ActivoRegistrado
-                activoRegistrado={activoRegistrado}
-                key={crypto.randomUUID()}
-              />
-            ))}
+            <InfiniteScroll
+              dataLength={activosRegistrados?.data.results.length ?? 0}
+              next={fetchNextPage}
+              hasMore={!!hasNextPage}
+              loader={
+                <div className="d-flex justify-content-center mx-auto">
+                  <Spinner variant="success" absolute={false} />
+                </div>
+              }
+              endMessage={
+                <p style={{ textAlign: "center" }}>
+                  <b>No hay mas resultados</b>
+                </p>
+              }
+              className="overflow-hidden"
+            >
+              {activosRegistrados?.data.results.map((activoRegistrado) => (
+                <ActivoRegistrado
+                  activoRegistrado={activoRegistrado}
+                  key={crypto.randomUUID()}
+                />
+              ))}
+            </InfiniteScroll>
           </Col>
         </Row>
         <Row className="justify-content-center">
@@ -223,8 +296,12 @@ const Home = () => {
                   </Col>
                   <Col>
                     {escaneados.map((activo) => (
-                      <div className="border rounded-1 p-1 my-1 bg-primary-subtle">
-                        {activo.codigo}
+                      <div className="border rounded-1 p-1 my-1 bg-primary-subtle d-flex flex-row flex-row-reverse justify-content-between">
+                        <div
+                          className="btn-close"
+                          onClick={() => deleteEscaneado(activo.codigo)}
+                        ></div>
+                        <div>{activo.codigo}</div>
                       </div>
                     ))}
                   </Col>

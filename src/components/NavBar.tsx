@@ -14,7 +14,6 @@ const NavBar = () => {
               width={50}
               className="d-d-inline-block"
             />{" "}
-            Revaluo 2023
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
@@ -35,7 +34,12 @@ const NavBar = () => {
                 </Link>
               </Nav.Item>
             </Nav>
-            <Col className="ms-auto" xs={12} md={3} lg={2}>
+            <Col
+              className="mx-auto mx-lg-0 ms-lg-auto mt-3 mt-lg-0"
+              xs={12}
+              md={3}
+              lg={2}
+            >
               <ButtonLogout />
             </Col>
           </Navbar.Collapse>

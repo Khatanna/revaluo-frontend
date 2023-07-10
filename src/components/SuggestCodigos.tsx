@@ -1,6 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import Autosuggest from "react-autosuggest";
 import Swal from "sweetalert2";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import swal from "@sweetalert/with-react";
 import Activo from "./Activo";
@@ -11,6 +13,7 @@ import { useAuthStore } from "../store/useAuthStore";
 const API_URL = import.meta.env.VITE_API_URL as string;
 
 const SuggestCodigos = () => {
+  const { logout } = useAuthStore((state) => state);
   const [codigos, setCodigos] = useState<{ codigo: string }[]>([]);
   const [codigo, setCodigo] = useState("INRA-");
   const { token } = useAuthStore((state) => state);
@@ -32,7 +35,7 @@ const SuggestCodigos = () => {
           title: "La sesión expiro inicie sesión nuevamente",
           confirmButtonText: "Iniciar sesión",
         });
-        // navigate("/login");
+        logout();
       }
     } catch (e) {
       setCodigos([]);

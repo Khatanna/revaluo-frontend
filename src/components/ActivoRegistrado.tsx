@@ -14,13 +14,13 @@ const ActivoRegistrado = ({
 }) => {
   const { activoFijo, usuario, piso } = activoRegistrado;
   const { user } = useAuthStore((state) => state);
-  const condicion: { [index: string]: string } = {
-    nuevo: "success",
-    bueno: "primary",
-    regular: "warning",
-    malo: "danger",
-    desuso: "secondary",
-  };
+  // const condicion: { [index: string]: string } = {
+  //   nuevo: "success",
+  //   bueno: "primary",
+  //   regular: "warning",
+  //   malo: "danger",
+  //   desuso: "secondary",
+  // };
 
   const style: { [index: string]: string } = {
     backgroundColor: usuario.color,
@@ -88,6 +88,7 @@ const ActivoRegistrado = ({
           <div className="position-absolute top-0 start-50  rounded-pill bg-dark text-white translate-middle badge mb-1">
             {user?.nombre === usuario.nombre ? "Tu" : usuario.nombre} | {piso}
           </div>
+
           <div className="shadow px-2 py-1 rounded-1 border border-secondary-subtle">
             <div>
               <strong>Codigo:</strong> {activoFijo.codigo}
@@ -98,11 +99,11 @@ const ActivoRegistrado = ({
                 {activoFijo.responsable}
               </span>
             </div>
-            <div>
+            {/* <div>
               <strong>Tipo:</strong> {activoFijo.tipo}
-            </div>
+            </div> */}
 
-            <div>
+            {/* <div>
               <strong>
                 Condición:{" "}
                 <span
@@ -113,7 +114,7 @@ const ActivoRegistrado = ({
                   {activoFijo.condicion}
                 </span>
               </strong>
-            </div>
+            </div> */}
           </div>
         </div>
       </Col>

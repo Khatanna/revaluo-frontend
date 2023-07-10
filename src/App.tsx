@@ -1,10 +1,6 @@
 import NavBar from "./components/NavBar";
-import { Suspense } from "react";
-import { Home } from "./lazy";
-import Main from "./pages/Main";
 import { useAuthStore } from "./store/useAuthStore";
 import { Navigate } from "react-router-dom";
-import Spinner from "./components/Spinner";
 // function Code() {
 //   const barcodeRef = useRef(null);
 //   const [barcode, setBarcode] = useState("");
@@ -48,16 +44,7 @@ function App() {
     return <Navigate to="/login" />;
   }
 
-  return (
-    <>
-      <NavBar />
-      {/* <Main>
-        <Suspense fallback={<Spinner variant="warning" />}>
-          <Home />
-        </Suspense>
-      </Main> */}
-    </>
-  );
+  return <NavBar />;
 }
 
 export default App;
