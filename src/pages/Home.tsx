@@ -74,22 +74,24 @@ const Home = () => {
     );
 
   const handleZebra = async (codigo: string) => {
-    const token = document.cookie.split(";").at(-1) as string;
-
     try {
-      const response = await fetch(`${API_URL}/activo/${codigo}`, {
-        headers: {
-          authorization: token,
-        },
-      });
+      const response = await fetch(`${API_URL}/activo/${codigo}`);
       if (!response.ok) {
         throw new Error(response.statusText);
       }
 
       const { activo } = await response.json();
 
-      setEscaneados([...escaneados, activo]);
-      setCodigo("");
+      if (activo) {
+        setEscaneados([...escaneados, activo]);
+        setCodigo("");
+      } else {
+        Swal.fire({
+          icon: "warning",
+          title: "Activo no encontrado",
+          confirmButtonColor: "green",
+        });
+      }
     } catch (error) {
       Swal.showValidationMessage(`Error de escaneo: ${error}`);
     }
