@@ -106,7 +106,7 @@ const Home = () => {
       setEscaneados([]);
     } catch (e) {
       setScannerVisible(false);
-
+      const duplicado = true;
       const swalWithBootstrapButtons = Swal.mixin({
         customClass: {
           confirmButton: "btn btn-success",
@@ -118,8 +118,8 @@ const Home = () => {
       Swal.fire({
         icon: "warning",
         title: "Activo duplicado",
-        text: `${message}`,
-        footer: `Registrado por: ${user.nombre} | Piso: ${piso}`,
+        //text: `${message}`,
+        // footer: `Registrado por: ${user.nombre} | Piso: ${piso}`,
         confirmButtonText: duplicado ? "Marcar como sobrante" : "Continuar",
         confirmButtonColor: "green",
         showCancelButton: duplicado,
