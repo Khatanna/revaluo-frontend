@@ -6,8 +6,9 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Spinner from "./Spinner";
 import BarcodeActivoLoading from "./BarcodeActivoLoading";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import axios, { AxiosResponse } from "axios";
+import { Endpoint } from "../constants/endpoints";
+import { useAuthStore } from "../store/useAuthStore";
 
 interface IActivosFaltantesResponse {
   prev: string;
@@ -16,30 +17,32 @@ interface IActivosFaltantesResponse {
   results: IActivo[];
 }
 
-const fetcher = (page: number): Promise<IActivosFaltantesResponse> =>
-  fetch(`${API_URL}/activos-faltantes?page=${page}&limit=100`).then((res) =>
-    res.json(),
-  );
+const fetcher = async (page: number, token: string) => {
+  const response = await axios.get(Endpoint.ACTIVOS_FALTANTES, {
+    params: {
+      page,
+      limit: 20,
+    },
+    headers: {
+      Authorization: token,
+    },
+  });
+
+  return response;
+};
 
 const ActivoFaltante = () => {
+  const { token } = useAuthStore((state) => state);
   const { data, error, fetchNextPage, hasNextPage, isInitialLoading } =
-    useInfiniteQuery<IActivosFaltantesResponse, Error>(
+    useInfiniteQuery<AxiosResponse<IActivosFaltantesResponse>, Error>(
       ["activos-faltantes"],
-      async ({ pageParam = 1 }) => await fetcher(pageParam),
+      async ({ pageParam = 1 }) => await fetcher(pageParam, token),
       {
-        getNextPageParam: (lastPage: IActivosFaltantesResponse) => {
-          if (lastPage.next) {
-            const { searchParams } = new URL(lastPage.next);
-            const page = parseInt(searchParams.get("page") as string);
-
-            return page;
-          }
-
-          return undefined;
-        },
-        getPreviousPageParam: (lastPage: IActivosFaltantesResponse) => {
-          if (lastPage.prev) {
-            const { searchParams } = new URL(lastPage.prev);
+        getNextPageParam: (
+          lastPage: AxiosResponse<IActivosFaltantesResponse>
+        ) => {
+          if (lastPage.data.next) {
+            const { searchParams } = new URL(lastPage.data.next);
             const page = parseInt(searchParams.get("page") as string);
 
             return page;
@@ -48,7 +51,7 @@ const ActivoFaltante = () => {
           return undefined;
         },
         cacheTime: 0,
-      },
+      }
     );
 
   const activosFaltantes = useMemo(
@@ -56,10 +59,13 @@ const ActivoFaltante = () => {
       data?.pages.reduce((prev, page) => {
         return {
           ...page,
-          results: [...prev.results, ...page.results],
+          data: {
+            ...page.data,
+            results: [...prev.data.results, ...page.data.results],
+          },
         };
       }),
-    [data],
+    [data]
   );
 
   if (isInitialLoading) {
@@ -90,7 +96,7 @@ const ActivoFaltante = () => {
       <Row className="justify-content-center">
         <Col xs={10} sm={8} md={6} lg={4}>
           <InfiniteScroll
-            dataLength={activosFaltantes?.results.length ?? 0}
+            dataLength={activosFaltantes?.data.results.length ?? 0}
             next={fetchNextPage}
             hasMore={!!hasNextPage}
             loader={
@@ -105,7 +111,7 @@ const ActivoFaltante = () => {
             }
             className="overflow-hidden"
           >
-            {activosFaltantes?.results.map((activo) => (
+            {activosFaltantes?.data.results.map((activo) => (
               <div
                 className="mb-2 border border-1 p-2 overflow-hidden border-tertiary"
                 key={crypto.randomUUID()}
