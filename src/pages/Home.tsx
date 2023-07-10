@@ -96,13 +96,51 @@ const Home = () => {
   };
 
   const handleRegisterMany = async () => {
-    const response = await axios.post(Endpoint.REGISTER_MANY_ACTIVO, {
-      activos: escaneados,
-      user,
-    });
+    try {
+      const response = await axios.post(Endpoint.REGISTER_MANY_ACTIVO, {
+        activos: escaneados,
+        user,
+      });
 
-    console.log({ response, data: response.data });
-    setEscaneados([]);
+      console.log({ response, data: response.data });
+      setEscaneados([]);
+    } catch (e) {
+      setScannerVisible(false);
+
+      const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+          confirmButton: "btn btn-success",
+          cancelButton: "btn btn-danger",
+        },
+        buttonsStyling: false,
+        confirmButtonText: "Continuar",
+      });
+      Swal.fire({
+        icon: "warning",
+        title: "Activo duplicado",
+        text: `${message}`,
+        footer: `Registrado por: ${user.nombre} | Piso: ${piso}`,
+        confirmButtonText: duplicado ? "Marcar como sobrante" : "Continuar",
+        confirmButtonColor: "green",
+        showCancelButton: duplicado,
+        cancelButtonText: "Cancelar",
+        cancelButtonColor: "red",
+      }).then((result) => {
+        if (result.isConfirmed && duplicado) {
+          swalWithBootstrapButtons.fire(
+            "Registrado!",
+            "Este activo se registro como sobrante.",
+            "success"
+          );
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          swalWithBootstrapButtons.fire(
+            "Cancelado",
+            "Este activo no se registro como sobrante",
+            "error"
+          );
+        }
+      });
+    }
   };
 
   const deleteEscaneado = (codigo: string) => {
