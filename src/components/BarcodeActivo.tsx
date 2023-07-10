@@ -2,25 +2,24 @@ import { Row, Col } from "react-bootstrap";
 import Barcode from "react-barcode";
 import logo from "../assets/logo.png";
 import { IActivo } from "../types";
+import LazyImage from "./LazyImage";
 
-const BarcodeActivo = ({ activoFijo }: { activoFijo: IActivo }) => {
+const BarcodeActivo = ({
+  activoFijo,
+}: {
+  activoFijo: Pick<IActivo, "codigo" | "rubro">;
+}) => {
   return (
     <Row>
-      <Col xs={5}>
-        <img
-          src={logo}
-          alt=""
-          width={50}
-          height={50}
-          className="img-fluid float-start"
-        />
+      <Col className="text-start">
+        <LazyImage src={logo} alt="" />
       </Col>
-      <Col xs={7} className="d-flex align-items-center">
-        <div className="text-center">INSTITUTO NACIONAL DE REFORMA AGRARIA</div>
+      <Col className="px-3 d-flex align-items-center text-center">
+        <div className="">INSTITUTO NACIONAL DE REFORMA AGRARIA</div>
       </Col>
       <Col
         xs={12}
-        className="border-1 border-top border-black mt-2 d-flex flex-column text-center align-items-center"
+        className="border-1 border-top border-black mt-2 d-flex flex-column align-items-center"
       >
         <Barcode value={activoFijo.codigo} height={60} margin={0} />
         <div className="mt-1">{activoFijo.rubro}</div>

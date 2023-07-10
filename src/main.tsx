@@ -1,61 +1,38 @@
 import ReactDOM from "react-dom/client";
-import App from "./App";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import NotFound from "./pages/NotFound";
-import Config from "./pages/Config";
-import ActivoFaltante from "./components/ActivoFaltante";
-
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Suspense } from "react";
+import { App, ActivoFaltante, Config, Login, NotFound, Home } from "./lazy";
+import axios from "axios";
+import Spinner from "./components/Spinner";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import "./index.css";
 const queryClient = new QueryClient();
-
-const AuthWrapper = ({ children }: { children: JSX.Element }) => {
-  const useAuth = () => {
-    const auth = window.localStorage.getItem("auth");
-    return auth;
-  };
-
-  const auth = useAuth();
-  return auth ? children : <Navigate to="/login" replace />;
-};
-
-const GuestWrapper = ({ children }: { children: JSX.Element }) => {
-  const useAuth = () => {
-    const auth = window.localStorage.getItem("auth");
-    return auth;
-  };
-
-  const auth = useAuth();
-  return !auth ? children : <Navigate to="/home" replace />;
-};
+const API_URL = import.meta.env.VITE_API_URL;
+axios.defaults.baseURL = API_URL;
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <AuthWrapper>
-              <App />
-            </AuthWrapper>
-          }
-        >
-          <Route element={<Home />} index />
-          <Route path="config" element={<Config />} />
-          <Route path="activos-faltantes" element={<ActivoFaltante />} />
-        </Route>
-        <Route
-          path="/login"
-          element={
-            <GuestWrapper>
-              <Login />
-            </GuestWrapper>
-          }
-        ></Route>
-        <Route path="*" element={<NotFound />}></Route>
-      </Routes>
-    </QueryClientProvider>
-  </BrowserRouter>
+  <Suspense
+    fallback={
+      <Spinner
+        variant="danger"
+        message="Asegurese de tener buena conexion a internet"
+      />
+    }
+  >
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <Routes>
+          <Route element={<App />}>
+            <Route index element={<Home />}></Route>
+            <Route path="config" element={<Config />} />
+            <Route path="activos-faltantes" element={<ActivoFaltante />} />
+          </Route>
+          <Route path="/login" element={<Login />}></Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+      </QueryClientProvider>
+    </BrowserRouter>
+  </Suspense>,
 );

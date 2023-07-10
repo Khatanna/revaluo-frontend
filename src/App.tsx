@@ -1,77 +1,50 @@
-import { Button, Navbar, Container, Nav, Col } from "react-bootstrap";
-import "./index.css";
-import { Link, Outlet } from "react-router-dom";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
-import NavbarCollapse from "react-bootstrap/esm/NavbarCollapse";
-import logo from "./assets/logo.png";
+import NavBar from "./components/NavBar";
+import { useAuthStore } from "./store/useAuthStore";
+import { Navigate } from "react-router-dom";
+// function Code() {
+//   const barcodeRef = useRef(null);
+//   const [barcode, setBarcode] = useState("");
+//   const captureBarcodeAsImage = () => {
+//     if (barcodeRef.current) {
+//       html2canvas(barcodeRef.current).then((canvas) => {
+//         const barcodeImage = canvas.toDataURL("image/png");
+//         setBarcode(barcodeImage);
+//       });
+//     }
+//   };
+
+//   useEffect(() => {
+//     captureBarcodeAsImage();
+//   }, []);
+
+//   return (
+//     <div>
+//       {barcode.length > 0 ? (
+//         <PDFViewer style={{ width: "100vw", height: "100vh" }}>
+//           <Sticker url={barcode} />
+//         </PDFViewer>
+//       ) : (
+//         <div ref={barcodeRef} style={{ width: "350px", height: "auto" }}>
+//           <BarcodeActivo
+//             activoFijo={{
+//               codigo: "INRA-02-0001",
+//               rubro: "ESTANTES Y MAS",
+//             }}
+//           />
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
 
 function App() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [path, setPath] = useState(location.pathname);
+  const { isAuth } = useAuthStore((state) => state);
 
-  const handleLogout = () => {
-    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    window.localStorage.removeItem("auth");
-    window.localStorage.removeItem("config");
-    window.localStorage.removeItem("user");
-    navigate("/login");
-  };
+  if (!isAuth) {
+    return <Navigate to="/login" />;
+  }
 
-  useEffect(() => {
-    setPath(location.pathname);
-  }, [location]);
-
-  return (
-    <>
-      <Navbar expand="lg" className="bg-body-tertiary" sticky="top">
-        <Container>
-          <Navbar.Brand href="#home" className="lh-lg">
-            <img
-              src={logo}
-              alt="logo"
-              width={30}
-              className="d-d-inline-block align-top"
-            />{" "}
-            Revaluo 2023
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <NavbarCollapse id="basic-navbar-nav">
-            <Nav className="justify-content-center">
-              <Nav.Item className="mx-auto">
-                <Nav.Link>
-                  <Link
-                    to={path === "/" ? "/config" : "/"}
-                    className="text-decoration-none"
-                  >
-                    {path === "/" ? "Configuraciones" : "Inicio"}
-                  </Link>
-                </Nav.Link>
-              </Nav.Item>
-              <Nav.Item className="mx-auto">
-                <Nav.Link>
-                  <Link
-                    to={"/activos-faltantes"}
-                    className="text-decoration-none"
-                  >
-                    Activos faltantes
-                  </Link>
-                </Nav.Link>
-              </Nav.Item>
-            </Nav>
-            <Col className="ms-auto" xs={12} md={3} lg={2}>
-              <Button onClick={handleLogout} variant="danger" className="w-100">
-                Cerrar sesión
-              </Button>
-            </Col>
-          </NavbarCollapse>
-        </Container>
-      </Navbar>
-
-      <Outlet />
-    </>
-  );
+  return <NavBar />;
 }
 
 export default App;

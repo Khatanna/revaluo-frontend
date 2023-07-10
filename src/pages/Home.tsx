@@ -1,69 +1,77 @@
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  Modal,
-  Form,
-  Spinner,
-} from "react-bootstrap";
-import { useState, useEffect } from "react";
+import { Container, Row, Col, Button, Modal, Form } from "react-bootstrap";
+import { useMemo, useState } from "react";
 import SuggestCodigos from "../components/SuggestCodigos";
 import Scanner from "../components/Scanner";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import Spinner from "../components/Spinner";
 import ActivoRegistrado from "../components/ActivoRegistrado";
-import { IActivo, IActivoRegistrado, IUsuario } from "../types";
+import { IActivo, IActivoRegistrado } from "../types";
 import socket from "../socket";
-import { useQuery } from "@tanstack/react-query";
-
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import axios, { AxiosError, AxiosResponse } from "axios";
+import SelectUsuarios from "../components/SelectUsuarios";
+import InfiniteScroll from "react-infinite-scroll-component";
+import { Endpoint, SocketEvent } from "../constants/endpoints";
+import { useAuthStore } from "../store/useAuthStore";
 const API_URL = import.meta.env.VITE_API_URL;
 
+interface IActivosRegistradosResponse {
+  prev: string;
+  next: string;
+  page: number;
+  results: IActivoRegistrado[];
+}
+
+const fetchActivosRegistrados = async (page: number) => {
+  const response = await axios.get("/activos-registrados", {
+    params: {
+      page,
+      limit: 10,
+    },
+  });
+  // const { results }: { results: Awaited<IActivoRegistrado[]> } = response.data;
+
+  return response;
+};
+
 const Home = () => {
-  const navigate = useNavigate();
   const [scannerVisible, setScannerVisible] = useState(false);
   const [show, setShow] = useState(false);
-  // const [activosRegistrados, setActivosRegistrados] = useState<
-  //   IActivoRegistrado[]
-  // >([]);
-  const [usuarios, setUsuarios] = useState([]);
   const [escaneados, setEscaneados] = useState<IActivo[]>([]);
   const [codigo, setCodigo] = useState("");
-  const [filter, setFilter] = useState("all");
+  const { user } = useAuthStore((state) => state);
+  const { data, error, fetchNextPage, hasNextPage, isInitialLoading, refetch } =
+    useInfiniteQuery<AxiosResponse<IActivosRegistradosResponse>, Error>(
+      ["activos-registrados"],
+      async ({ pageParam = 1 }) => await fetchActivosRegistrados(pageParam),
+      {
+        getNextPageParam: (
+          lastPage: AxiosResponse<IActivosRegistradosResponse>
+        ) => {
+          if (lastPage.data.next) {
+            const { searchParams } = new URL(lastPage.data.next);
+            const page = parseInt(searchParams.get("page") as string);
 
-  const {
-    data: activosRegistrados,
-    error,
-    isLoading,
-  } = useQuery<IActivoRegistrado[]>(["activos-registrados"], {
-    queryFn: () => fetchActivosRegistrados(),
-  });
+            return page;
+          }
 
-  const me = JSON.parse(window.localStorage.getItem("user") as string);
+          return undefined;
+        },
+        getPreviousPageParam: (
+          lastPage: AxiosResponse<IActivosRegistradosResponse>
+        ) => {
+          if (lastPage.data.prev) {
+            const { searchParams } = new URL(lastPage.data.prev);
+            const page = parseInt(searchParams.get("page") as string);
 
-  const fetchUsuarios = async () => {
-    const response = await fetch(`${API_URL}/users`);
-    const data = await response.json();
+            return page;
+          }
 
-    setUsuarios(data.users);
-  };
-
-  const fetchActivosRegistrados = async () => {
-    const response = await fetch(`${API_URL}/activos-registrados`);
-    const {
-      activosRegistrados,
-    }: { activosRegistrados: Awaited<IActivoRegistrado[]> } =
-      await response.json();
-
-    return activosRegistrados;
-  };
-
-  const fetchActivosRegistradosByUserId = async (userId: string) => {
-    const response = await fetch(`${API_URL}/activos-registrados/${userId}`);
-    const data = await response.json();
-
-    // setActivosRegistrados(data.activosRegistrados);
-  };
+          return undefined;
+        },
+        cacheTime: 0,
+      }
+    );
 
   const handleZebra = async (codigo: string) => {
     const token = document.cookie.split(";").at(-1) as string;
@@ -88,27 +96,30 @@ const Home = () => {
   };
 
   const handleRegisterMany = async () => {
-    const user = JSON.parse(localStorage.getItem("user") as string);
-    const { piso } = JSON.parse(localStorage.getItem("config") as string);
-
-    escaneados.forEach((activo) => {
-      socket.emit("activo@registrado", activo.codigo, user, piso);
+    const response = await axios.post(Endpoint.REGISTER_MANY_ACTIVO, {
+      activos: escaneados,
+      user,
     });
+
+    console.log({ response, data: response.data });
+    setEscaneados([]);
   };
 
-  socket.on("activo@registrado", () => {
-    Swal.fire({
-      icon: "success",
-      title: "Registrado",
-      confirmButtonColor: "green",
-      confirmButtonText: "Continuar",
-    });
-    setScannerVisible(false);
-    fetchActivosRegistrados();
-  });
+  const deleteEscaneado = (codigo: string) => {
+    setEscaneados(escaneados.filter((e) => e.codigo !== codigo));
+  };
 
-  socket.on("usuario@actualizado", () => {
-    fetchActivosRegistrados();
+  // socket.on(SocketEvent.REGISTER, () => {
+  //   Swal.fire({
+  //     icon: "success",
+  //     title: "Activo registrado",
+  //     confirmButtonColor: "green",
+  //     confirmButtonText: "Continuar",
+  //   });
+  // });
+
+  socket.on(SocketEvent.REGISTER_MANY_ACTIVO, () => {
+    refetch();
   });
 
   socket.on("activo@registrado-error", (user, piso, message, duplicado) => {
@@ -148,38 +159,31 @@ const Home = () => {
       }
     });
   });
+  const activosRegistrados = useMemo(
+    () =>
+      data?.pages.reduce((prev, page) => {
+        return {
+          ...page,
+          data: {
+            ...page.data,
+            results: [...prev.data.results, ...page.data.results],
+          },
+        };
+      }),
+    [data]
+  );
 
-  useEffect(() => {
-    const config = localStorage.getItem("config");
-
-    if (!config) {
-      Swal.fire({
-        icon: "info",
-        title: "Debe configurar antes de iniciar",
-        confirmButtonText: "Configurar",
-      });
-
-      navigate("/config");
-    } else {
-      if (filter === "all") {
-        fetchActivosRegistrados();
-        fetchUsuarios();
-      } else {
-        fetchActivosRegistradosByUserId(filter);
-      }
-    }
-  }, [navigate, filter]);
-
-  if (isLoading) {
-    return (
-      <div className="position-absolute top-50 start-50 translate-middle-x">
-        <Spinner />
-      </div>
-    );
+  if (isInitialLoading) {
+    // TODO simular lazy loading aqui
+    return <Spinner variant="primary" />;
   }
 
   if (error) {
-    return <div>Error al obtener los datos</div>;
+    return (
+      <h4 className="position-absolute top-50 start-50 translate-middle-x fs-5 text-center">
+        No se encontraron los resultados
+      </h4>
+    );
   }
 
   return (
@@ -192,31 +196,36 @@ const Home = () => {
                 <SuggestCodigos />
               </Col>
               <Col>
-                <Form.Select
-                  onChange={(e) => setFilter(e.target.value)}
-                  placeholder="Filtrar por usuario"
-                  value={filter}
-                >
-                  <option disabled>Filtrar por usuario</option>
-                  <option value="all">Ver todos</option>
-                  {usuarios.map((usuario: IUsuario) => (
-                    <option value={usuario.id} key={crypto.randomUUID()}>
-                      {usuario.id === me.id ? "Tú" : usuario.nombre}
-                    </option>
-                  ))}
-                </Form.Select>
+                <SelectUsuarios />
               </Col>
             </Row>
           </Col>
         </Row>
         <Row className="justify-content-center">
           <Col xs={12} sm={8} md={6} lg={4}>
-            {activosRegistrados?.map((activoRegistrado) => (
-              <ActivoRegistrado
-                activoRegistrado={activoRegistrado}
-                key={crypto.randomUUID()}
-              />
-            ))}
+            <InfiniteScroll
+              dataLength={activosRegistrados?.data.results.length ?? 0}
+              next={fetchNextPage}
+              hasMore={!!hasNextPage}
+              loader={
+                <div className="d-flex justify-content-center mx-auto">
+                  <Spinner variant="success" absolute={false} />
+                </div>
+              }
+              endMessage={
+                <p style={{ textAlign: "center" }}>
+                  <b>No hay mas resultados</b>
+                </p>
+              }
+              className="overflow-hidden"
+            >
+              {activosRegistrados?.data.results.map((activoRegistrado) => (
+                <ActivoRegistrado
+                  activoRegistrado={activoRegistrado}
+                  key={crypto.randomUUID()}
+                />
+              ))}
+            </InfiniteScroll>
           </Col>
         </Row>
         <Row className="justify-content-center">
@@ -234,7 +243,7 @@ const Home = () => {
                 variant={"primary"}
                 className="ms-1"
               >
-                Abrir escaner
+                Escaner
               </Button>
             </div>
 
@@ -289,8 +298,12 @@ const Home = () => {
                   </Col>
                   <Col>
                     {escaneados.map((activo) => (
-                      <div className="border rounded-1 p-1 my-1 bg-primary-subtle">
-                        {activo.codigo}
+                      <div className="border rounded-1 p-1 my-1 bg-primary-subtle d-flex flex-row flex-row-reverse justify-content-between">
+                        <div
+                          className="btn-close"
+                          onClick={() => deleteEscaneado(activo.codigo)}
+                        ></div>
+                        <div>{activo.codigo}</div>
                       </div>
                     ))}
                   </Col>
