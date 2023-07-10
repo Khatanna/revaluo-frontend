@@ -189,7 +189,7 @@ const Home = () => {
   return (
     <>
       <Container fluid>
-        <Row className="justify-content-center mt-3">
+        <Row className="align-content-center flex-column">
           <Col xs={12} sm={8} md={6} lg={4}>
             <Row>
               <Col>
@@ -200,8 +200,6 @@ const Home = () => {
               </Col>
             </Row>
           </Col>
-        </Row>
-        <Row className="justify-content-center">
           <Col xs={12} sm={8} md={6} lg={4}>
             <InfiniteScroll
               dataLength={activosRegistrados?.data.results.length ?? 0}
@@ -226,9 +224,8 @@ const Home = () => {
                 />
               ))}
             </InfiniteScroll>
+            ;
           </Col>
-        </Row>
-        <Row className="justify-content-center">
           <Col xs={12} sm={8} md={6} lg={4}>
             <div className="m-3 shadow-lg position-fixed bottom-0 end-0">
               <Button
@@ -246,79 +243,76 @@ const Home = () => {
                 Escaner
               </Button>
             </div>
-
-            <Modal
-              show={scannerVisible}
-              onHide={() => setScannerVisible(false)}
-              backdrop="static"
-              keyboard={false}
-              centered
-              size="lg"
-            >
-              <Modal.Header closeButton>
-                <Modal.Title>Escaner</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>{scannerVisible && <Scanner />}</Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="warning"
-                  onClick={() => setScannerVisible(false)}
-                >
-                  Cerrar escaner
-                </Button>
-              </Modal.Footer>
-            </Modal>
-
-            <Modal
-              show={show}
-              onHide={() => setShow(false)}
-              backdrop="static"
-              keyboard={false}
-              centered
-              size="lg"
-            >
-              <Modal.Header closeButton></Modal.Header>
-              <Modal.Body>
-                <Row>
-                  <Col xs={9}>
-                    <Form.Control
-                      type="text"
-                      placeholder="Escaneé un codigo"
-                      value={codigo}
-                      onChange={(e) => setCodigo(e.target.value)}
-                    />
-                  </Col>
-                  <Col xs={3}>
-                    <Button
-                      className="w-100"
-                      onClick={() => handleZebra(codigo)}
-                    >
-                      Listo
-                    </Button>
-                  </Col>
-                  <Col>
-                    {escaneados.map((activo) => (
-                      <div className="border rounded-1 p-1 my-1 bg-primary-subtle d-flex flex-row flex-row-reverse justify-content-between">
-                        <div
-                          className="btn-close"
-                          onClick={() => deleteEscaneado(activo.codigo)}
-                        ></div>
-                        <div>{activo.codigo}</div>
-                      </div>
-                    ))}
-                  </Col>
-                </Row>
-              </Modal.Body>
-              <Modal.Footer>
-                <Button variant="danger" onClick={() => setShow(false)}>
-                  Cerrar
-                </Button>
-                <Button variant="success" onClick={handleRegisterMany}>
-                  Registrar todos
-                </Button>
-              </Modal.Footer>
-            </Modal>
           </Col>
+
+          <Modal
+            show={scannerVisible}
+            onHide={() => setScannerVisible(false)}
+            backdrop="static"
+            keyboard={false}
+            centered
+            size="lg"
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Escaner</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>{scannerVisible && <Scanner />}</Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="warning"
+                onClick={() => setScannerVisible(false)}
+              >
+                Cerrar escaner
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          <Modal
+            show={show}
+            onHide={() => setShow(false)}
+            backdrop="static"
+            keyboard={false}
+            centered
+            size="lg"
+          >
+            <Modal.Header closeButton></Modal.Header>
+            <Modal.Body>
+              <Row>
+                <Col xs={9}>
+                  <Form.Control
+                    type="text"
+                    placeholder="Escaneé un codigo"
+                    value={codigo}
+                    onChange={(e) => setCodigo(e.target.value)}
+                  />
+                </Col>
+                <Col xs={3}>
+                  <Button className="w-100" onClick={() => handleZebra(codigo)}>
+                    Listo
+                  </Button>
+                </Col>
+                <Col>
+                  {escaneados.map((activo) => (
+                    <div className="border rounded-1 p-1 my-1 bg-primary-subtle d-flex flex-row flex-row-reverse justify-content-between">
+                      <div
+                        className="btn-close"
+                        onClick={() => deleteEscaneado(activo.codigo)}
+                      ></div>
+                      <div>{activo.codigo}</div>
+                    </div>
+                  ))}
+                </Col>
+              </Row>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="danger" onClick={() => setShow(false)}>
+                Cerrar
+              </Button>
+              <Button variant="success" onClick={handleRegisterMany}>
+                Registrar todos
+              </Button>
+            </Modal.Footer>
+          </Modal>
         </Row>
       </Container>
     </>
