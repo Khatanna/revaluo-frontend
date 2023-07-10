@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { App, ActivoFaltante, Config, Login, NotFound, Home } from "./lazy";
 import axios from "axios";
 import Spinner from "./components/Spinner";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "./index.css";
 const queryClient = new QueryClient();
 const API_URL = import.meta.env.VITE_API_URL;
@@ -34,5 +34,5 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </QueryClientProvider>
     </BrowserRouter>
-  </Suspense>,
+  </Suspense>
 );

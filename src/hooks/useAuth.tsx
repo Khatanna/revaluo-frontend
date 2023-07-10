@@ -20,17 +20,15 @@ const mutationFnLogout: MutationFunction<AxiosResponse, string> = async (
 };
 
 const useAuth = () => {
-  const {
-    login: loginStore,
-    logout: logoutStore,
-    token,
-  } = useAuthStore((state) => state);
+  const { login: loginStore, logout: logoutStore } = useAuthStore(
+    (state) => state
+  );
 
   const { mutate: login, isLoading: isLoadingLogin } = useMutation<
     AxiosResponse<IAuthResponse>,
     AxiosError,
     IForm,
-    unknowna
+    unknown
   >({
     mutationFn: mutationFnLogin,
     onSuccess: ({ data: { user, token } }) => {
