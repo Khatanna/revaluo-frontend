@@ -1,5 +1,4 @@
 import { Form } from "react-bootstrap";
-import { useAuthStore } from "../store/useAuthStore";
 
 const pisos = [
   "PLANTA BAJA",

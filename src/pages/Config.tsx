@@ -1,4 +1,4 @@
-import { Row, Col, Form, Container, Button, Spinner } from "react-bootstrap";
+import { Row, Col, Form, Container, Button } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import SelectPisos from "../components/SelectPisos";
 import Swal from "sweetalert2";
@@ -31,7 +31,7 @@ const Config = () => {
             nombre: form.nombre,
             color: form.color,
           },
-          form.piso,
+          form.piso
         );
 
         navigate("/");

@@ -1,7 +1,6 @@
 import { Container, Row, Col } from "react-bootstrap";
 import { useMemo } from "react";
 import SuggestCodigos from "../components/SuggestCodigos";
-import Swal from "sweetalert2";
 import Spinner from "../components/Spinner";
 import ActivoRegistrado from "../components/ActivoRegistrado";
 import { IActivosRegistradosResponse } from "../types";
