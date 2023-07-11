@@ -2,6 +2,7 @@ import NavBar from "./components/NavBar";
 import { useAuthStore } from "./store/useAuthStore";
 import { Navigate } from "react-router-dom";
 import axios from "./api/axios";
+import Swal from "sweetalert2";
 
 // function Code() {
 //   const barcodeRef = useRef(null);
@@ -40,7 +41,7 @@ import axios from "./api/axios";
 // }
 
 function App() {
-  const { isAuth, token } = useAuthStore((state) => state);
+  const { isAuth, token, logout } = useAuthStore((state) => state);
 
   if (!isAuth) {
     return <Navigate to="/login" />;
@@ -51,6 +52,24 @@ function App() {
 
     return config;
   });
+
+  axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response && error.response.status === 403) {
+        Swal.fire({
+          icon: "info",
+          title: "Su sesión ha expirado",
+          confirmButtonText: "Inicar sesión",
+          confirmButtonColor: "green",
+        });
+
+        logout();
+      }
+
+      return Promise.reject(error);
+    }
+  );
 
   return <NavBar />;
 }

@@ -1,5 +1,5 @@
 import { Container, Row, Col } from "react-bootstrap";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import SuggestCodigos from "../components/SuggestCodigos";
 import Spinner from "../components/Spinner";
 import ActivoRegistrado from "../components/ActivoRegistrado";
@@ -14,6 +14,7 @@ import { Endpoint, SocketEvent } from "../constants/endpoints";
 import ModalRegisterMany from "../components/ModalRegisterMany";
 import { useAuthStore } from "../store/useAuthStore";
 import { Navigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const fetchActivosRegistrados = async (page: number) => {
   const response = await axios.get(Endpoint.ACTIVOS_REGISTRADOS, {
@@ -58,9 +59,32 @@ const Home = () => {
   //   });
   // });
 
-  socket.on(SocketEvent.REGISTER_MANY_ACTIVO, async () => {
-    await refetch();
-  });
+  useEffect(() => {
+    socket.on(SocketEvent.REGISTER_MANY_ACTIVO, async () => {
+      await refetch();
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3500,
+        timerProgressBar: true,
+        didOpen: (toast: HTMLElement) => {
+          toast.addEventListener("mouseenter", Swal.stopTimer);
+          toast.addEventListener("mouseleave", Swal.resumeTimer);
+        },
+      });
+
+      Toast.fire({
+        icon: "success",
+        title: "Activos registrados",
+      });
+    });
+
+    return () => {
+      socket.off(SocketEvent.REGISTER_MANY_ACTIVO);
+    };
+  }, [refetch]);
 
   const activosRegistrados = useMemo(
     () =>
@@ -104,7 +128,7 @@ const Home = () => {
             lg={4}
             style={{ height: "800px" }}
             id="items"
-            className="d-flex flex-column-reverse overflow-auto sticky top-0"
+            className="d-flex flex-column-reverse overflow-auto"
           >
             <InfiniteScroll
               dataLength={activosRegistrados?.data.results.length ?? 0}

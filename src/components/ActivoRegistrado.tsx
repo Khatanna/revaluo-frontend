@@ -32,7 +32,7 @@ export const showCode = (activoFijo: IActivo) => {
         showConfirmButton: false,
         timer: 1500,
         timerProgressBar: true,
-        didOpen: (toast: any) => {
+        didOpen: (toast: HTMLElement) => {
           toast.addEventListener("mouseenter", Swal.stopTimer);
           toast.addEventListener("mouseleave", Swal.resumeTimer);
         },
@@ -46,7 +46,7 @@ export const showCode = (activoFijo: IActivo) => {
             title: "Texto copiado en el portapapeles",
           });
         })
-        .catch((_) => {
+        .catch(() => {
           Toast.fire({
             icon: "success",
             title: "Ocurrio un error al copiar",
@@ -63,13 +63,6 @@ const ActivoRegistrado = ({
 }) => {
   const { activoFijo, usuario, piso } = activoRegistrado;
   const { user } = useAuthStore((state) => state);
-  // const condicion: { [index: string]: string } = {
-  //   nuevo: "success",
-  //   bueno: "primary",
-  //   regular: "warning",
-  //   malo: "danger",
-  //   desuso: "secondary",
-  // };
 
   const style: { [index: string]: string } = {
     backgroundColor: usuario.color,
@@ -105,7 +98,16 @@ const ActivoRegistrado = ({
             <div>
               <strong>Tipo:</strong> {activoFijo.tipo}
             </div>
-
+            <div>
+              <strong>Imprimir:</strong>{" "}
+              <span
+                className={`text-${
+                  activoRegistrado.imprimir ? "success" : "danger"
+                } fw-bold`}
+              >
+                {activoRegistrado.imprimir ? "SI" : "NO"}
+              </span>
+            </div>
             {/* <div>
               <strong>
                 Condición:{" "}

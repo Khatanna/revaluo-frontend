@@ -19,6 +19,7 @@ export interface IActivoRegistrado {
   activoFijo: IActivo;
   usuario: IUsuario;
   piso: string;
+  imprimir: boolean
 }
 
 export interface IActivosRegistradosResponse {

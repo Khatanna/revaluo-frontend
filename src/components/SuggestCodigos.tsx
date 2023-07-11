@@ -25,7 +25,7 @@ const SuggestCodigos = () => {
           params: {
             codigo,
           },
-        },
+        }
       );
       const {
         data: { codigos },
@@ -50,34 +50,40 @@ const SuggestCodigos = () => {
   };
 
   const fetchActivo = async (codigo: string) => {
-    const response = await axios.get(Endpoint.ACTIVO_FIJO.concat("/", codigo));
-    const {
-      data: { activo },
-    } = response;
+    try {
+      const {
+        data: { activo },
+      } = await axios.get(Endpoint.ACTIVO_FIJO.concat("/", codigo));
 
-    swal(<Activo activo={activo} />, {
-      buttons: {
-        confirm: {
-          text: "Registrar",
-          className: "btn-confirm",
+      swal(<Activo activo={activo} />, {
+        buttons: {
+          confirm: {
+            text: "Registrar",
+            className: "btn-confirm",
+          },
+          cancel: {
+            text: "Cancelar",
+            value: false,
+            visible: true,
+            className: "btn-cancel",
+            closeModal: true,
+          },
         },
-        cancel: {
-          text: "Cancelar",
-          value: false,
-          visible: true,
-          className: "btn-cancel",
-          closeModal: true,
-        },
-      },
-    }).then((value: boolean) => {
-      if (value) {
-        // const user = JSON.parse(localStorage.getItem("user") as string);
-        // const { piso } = JSON.parse(localStorage.getItem("config") as string);
-        // socket.emit("activo@registrado", activo.codigo, user, piso);
-      }
-    });
-
-    setCodigo("INRA-");
+      }).then((value: boolean) => {
+        if (value) {
+          // const user = JSON.parse(localStorage.getItem("user") as string);
+          // const { piso } = JSON.parse(localStorage.getItem("config") as string);
+          // socket.emit("activo@registrado", activo.codigo, user, piso);
+        }
+      });
+    } catch (e) {
+      Swal.fire({
+        title: "No se encontro este activo fijo",
+        icon: "error",
+      });
+    } finally {
+      setCodigo("INRA-");
+    }
   };
 
   return (

@@ -27,12 +27,7 @@ const SelectPisos = ({
         Elije el piso
       </option>
       {pisos.map((p) => (
-        <option
-          key={crypto.randomUUID()}
-          // defaultValue={p}
-          value={p}
-          selected={piso === p}
-        >
+        <option key={crypto.randomUUID()} value={p} selected={piso === p}>
           {p}
         </option>
       ))}

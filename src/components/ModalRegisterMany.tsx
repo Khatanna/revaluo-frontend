@@ -1,6 +1,5 @@
 import { Row, Col, Button, Modal, Form } from "react-bootstrap";
 import { useState } from "react";
-import socket from "../socket";
 import { useAuthStore } from "../store/useAuthStore";
 import { IActivo } from "../types";
 import { Endpoint } from "../constants/endpoints";
@@ -9,22 +8,26 @@ import Swal from "sweetalert2";
 import { AxiosError } from "axios";
 import { showCode } from "./ActivoRegistrado";
 
+interface Escaneo extends IActivo {
+  print: boolean;
+}
+
 const ModalRegisterMany = () => {
   const { user, piso } = useAuthStore((state) => state);
 
   const [show, setShow] = useState(false);
   const [codigo, setCodigo] = useState("");
   const [loadingEscaneo, setLoadingEscaneo] = useState(false);
-  const [escaneados, setEscaneados] = useState<IActivo[]>([]);
-  const handleZebra = async (codigo: string) => {
+  const [escaneados, setEscaneados] = useState<Escaneo[]>([]);
+  const handleZebra = async (codigo: string, print: boolean) => {
     try {
       setLoadingEscaneo(true);
       const {
         data: { activo },
-      } = await axios.get(Endpoint.ACTIVO_FIJO.concat("/", codigo));
+      } = await axios.get(Endpoint.REGISTER_MANY_ACTIVO.concat("/", codigo));
 
       if (activo) {
-        setEscaneados([...escaneados, activo]);
+        setEscaneados([...escaneados, { ...activo, print }]);
         setCodigo("");
       } else {
         Swal.fire({
@@ -35,7 +38,6 @@ const ModalRegisterMany = () => {
       }
     } catch (e) {
       const error = e as AxiosError;
-      console.log(e);
       Swal.fire(`${error.response?.data ?? "Error de conexión"}`, "warning");
     } finally {
       setLoadingEscaneo(false);
@@ -56,41 +58,17 @@ const ModalRegisterMany = () => {
     setEscaneados(escaneados.filter((e) => e.codigo !== codigo));
   };
 
-  socket.on("activo@registrado-error", (user, piso, message, duplicado) => {
-    const swalWithBootstrapButtons = Swal.mixin({
-      customClass: {
-        confirmButton: "btn btn-success",
-        cancelButton: "btn btn-danger",
-      },
-      buttonsStyling: false,
-      confirmButtonText: "Continuar",
-    });
-    Swal.fire({
-      icon: "warning",
-      title: "Activo duplicado",
-      text: `${message}`,
-      footer: `Registrado por: ${user.nombre} | Piso: ${piso}`,
-      confirmButtonText: duplicado ? "Marcar como sobrante" : "Continuar",
-      confirmButtonColor: "green",
-      showCancelButton: duplicado,
-      cancelButtonText: "Cancelar",
-      cancelButtonColor: "red",
-    }).then((result) => {
-      if (result.isConfirmed && duplicado) {
-        swalWithBootstrapButtons.fire(
-          "Registrado!",
-          "Este activo se registro como sobrante.",
-          "success"
-        );
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        swalWithBootstrapButtons.fire(
-          "Cancelado",
-          "Este activo no se registro como sobrante",
-          "error"
-        );
-      }
-    });
-  });
+  const handleCheckItem = (index: number) => {
+    setEscaneados(
+      escaneados.map((e, i) => {
+        if (i === index) {
+          e.print = !e.print;
+        }
+        return e;
+      })
+    );
+  };
+
   return (
     <>
       <Button
@@ -120,7 +98,10 @@ const ModalRegisterMany = () => {
               />
             </Col>
             <Col xs={3}>
-              <Button className="w-100" onClick={() => handleZebra(codigo)}>
+              <Button
+                className="w-100"
+                onClick={() => handleZebra(codigo, false)}
+              >
                 Listo
               </Button>
             </Col>
@@ -128,11 +109,20 @@ const ModalRegisterMany = () => {
               {loadingEscaneo ? (
                 <div className="fw-bold ">Buscando activo...</div>
               ) : (
-                escaneados.map((activo) => (
+                escaneados.map((activo, index) => (
                   <div key={crypto.randomUUID()}>
-                    <div className="border rounded-1 p-1 my-1 bg-primary-subtle d-flex flex-row justify-content-between">
+                    <div className="border rounded-1 p-1 my-1 bg-primary-subtle d-flex flex-row justify-content-between align-items-center gap-1">
+                      <div className="input-group-text bg-primary-subtle shadow-lg p-1">
+                        <input
+                          className="form-check-input mt-0"
+                          type="checkbox"
+                          checked={activo.print}
+                          onChange={() => handleCheckItem(index)}
+                        />
+                        🖨️
+                      </div>
                       <div
-                        className="w-100 shadow-lg border rounded-1"
+                        className="w-100 shadow-lg rounded-1 px-2 py-1"
                         onClick={() => showCode(activo)}
                         style={{ cursor: "pointer" }}
                       >
