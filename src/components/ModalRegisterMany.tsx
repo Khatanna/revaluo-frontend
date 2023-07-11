@@ -10,7 +10,7 @@ import { AxiosError } from "axios";
 import { showCode } from "./ActivoRegistrado";
 
 const ModalRegisterMany = () => {
-  const { user } = useAuthStore((state) => state);
+  const { user, piso } = useAuthStore((state) => state);
 
   const [show, setShow] = useState(false);
   const [codigo, setCodigo] = useState("");
@@ -43,12 +43,12 @@ const ModalRegisterMany = () => {
   };
 
   const handleRegisterMany = async () => {
-    const response = await axios.post(Endpoint.REGISTER_MANY_ACTIVO, {
+    await axios.post(Endpoint.REGISTER_MANY_ACTIVO, {
       activos: escaneados,
       user,
+      piso,
     });
 
-    console.log({ response, data: response.data });
     setEscaneados([]);
   };
 
@@ -80,13 +80,13 @@ const ModalRegisterMany = () => {
         swalWithBootstrapButtons.fire(
           "Registrado!",
           "Este activo se registro como sobrante.",
-          "success",
+          "success"
         );
       } else if (result.dismiss === Swal.DismissReason.cancel) {
         swalWithBootstrapButtons.fire(
           "Cancelado",
           "Este activo no se registro como sobrante",
-          "error",
+          "error"
         );
       }
     });
@@ -129,7 +129,7 @@ const ModalRegisterMany = () => {
                 <div className="fw-bold ">Buscando activo...</div>
               ) : (
                 escaneados.map((activo) => (
-                  <>
+                  <div key={crypto.randomUUID()}>
                     <div className="border rounded-1 p-1 my-1 bg-primary-subtle d-flex flex-row justify-content-between">
                       <div
                         className="w-100 shadow-lg border rounded-1"
@@ -141,10 +141,9 @@ const ModalRegisterMany = () => {
                       <div
                         className="btn-close"
                         onClick={() => deleteEscaneado(activo.codigo)}
-                        key={crypto.randomUUID()}
                       ></div>
                     </div>
-                  </>
+                  </div>
                 ))
               )}
             </Col>

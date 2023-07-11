@@ -29,7 +29,6 @@ const fetchActivosRegistrados = async (page: number) => {
 
 const Home = () => {
   const { piso } = useAuthStore((state) => state);
-
   const { data, error, fetchNextPage, hasNextPage, isInitialLoading, refetch } =
     useInfiniteQuery<AxiosResponse<IActivosRegistradosResponse>, Error>(
       ["activos-registrados"],
@@ -51,17 +50,17 @@ const Home = () => {
       }
     );
 
-  socket.on(SocketEvent.REGISTER, () => {
-    Swal.fire({
-      icon: "success",
-      title: "Activo registrado",
-      confirmButtonColor: "green",
-      confirmButtonText: "Continuar",
-    });
-  });
+  // socket.on(SocketEvent.REGISTER, () => {
+  //   Swal.fire({
+  //     icon: "success",
+  //     title: "Activo registrado",
+  //     confirmButtonColor: "green",
+  //     confirmButtonText: "Continuar",
+  //   });
+  // });
 
-  socket.on(SocketEvent.REGISTER_MANY_ACTIVO, () => {
-    refetch();
+  socket.on(SocketEvent.REGISTER_MANY_ACTIVO, async () => {
+    await refetch();
   });
 
   const activosRegistrados = useMemo(
@@ -99,19 +98,20 @@ const Home = () => {
     <>
       <Container fluid>
         <Row className="align-content-center flex-column">
-          <Col xs={12} sm={8} md={6} lg={4}>
-            <Row>
-              <Col>
-                <SuggestCodigos />
-              </Col>
-              <Col>{/* <SelectUsuarios /> */}</Col>
-            </Row>
-          </Col>
-          <Col xs={12} sm={8} md={6} lg={4} className="vh-100">
+          <Col
+            xs={12}
+            sm={8}
+            md={6}
+            lg={4}
+            style={{ height: "800px" }}
+            id="items"
+            className="d-flex flex-column-reverse overflow-auto sticky top-0"
+          >
             <InfiniteScroll
               dataLength={activosRegistrados?.data.results.length ?? 0}
               next={fetchNextPage}
               hasMore={!!hasNextPage}
+              inverse={true}
               loader={
                 <div className="d-flex justify-content-center mx-auto">
                   <Spinner variant="success" absolute={false} />
@@ -122,7 +122,8 @@ const Home = () => {
                   <b>No hay mas resultados</b>
                 </p>
               }
-              className="overflow-hidden"
+              scrollableTarget="items"
+              className="overflow-hidden d-flex flex-column-reverse"
             >
               {activosRegistrados?.data.results.map((activoRegistrado) => (
                 <ActivoRegistrado
@@ -131,6 +132,14 @@ const Home = () => {
                 />
               ))}
             </InfiniteScroll>
+          </Col>
+          <Col xs={12} sm={8} md={6} lg={4} className="mt-4">
+            <Row>
+              <Col xs={12}>
+                <SuggestCodigos />
+              </Col>
+              <Col>{/* <SelectUsuarios /> */}</Col>
+            </Row>
           </Col>
         </Row>
       </Container>
