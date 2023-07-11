@@ -16,9 +16,16 @@ export interface IUsuario {
 }
 
 export interface IActivoRegistrado {
-  activoFijo: IActivo,
-  usuario: IUsuario,
-  piso: string
+  activoFijo: IActivo;
+  usuario: IUsuario;
+  piso: string;
+}
+
+export interface IActivosRegistradosResponse {
+  prev: string;
+  next: string;
+  page: number;
+  results: IActivoRegistrado[];
 }
 
 export interface IAuthResponse {
@@ -27,10 +34,9 @@ export interface IAuthResponse {
 }
 
 export interface IUserResponse {
-  users: Pick<IUsuario, 'id' | 'nombre'>[];
+  users: Pick<IUsuario, "id" | "nombre">[];
 }
 
 export interface IForm {
   [index: string]: string;
 }
-
