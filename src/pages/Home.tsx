@@ -4,16 +4,20 @@ import SuggestCodigos from "../components/SuggestCodigos";
 import Scanner from "../components/Scanner";
 import Swal from "sweetalert2";
 import Spinner from "../components/Spinner";
-import ActivoRegistrado from "../components/ActivoRegistrado";
+import ActivoRegistrado, { showCode } from "../components/ActivoRegistrado";
 import { IActivo, IActivoRegistrado } from "../types";
 import socket from "../socket";
+<<<<<<< development
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import axios, { AxiosError, AxiosResponse } from "axios";
+=======
+import { useInfiniteQuery } from "@tanstack/react-query";
+import axios, { Axios, AxiosError, AxiosResponse } from "axios";
+>>>>>>> local
 import SelectUsuarios from "../components/SelectUsuarios";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Endpoint, SocketEvent } from "../constants/endpoints";
 import { useAuthStore } from "../store/useAuthStore";
-const API_URL = import.meta.env.VITE_API_URL;
 
 interface IActivosRegistradosResponse {
   prev: string;
@@ -39,7 +43,12 @@ const Home = () => {
   const [show, setShow] = useState(false);
   const [escaneados, setEscaneados] = useState<IActivo[]>([]);
   const [codigo, setCodigo] = useState("");
+<<<<<<< development
   const { user } = useAuthStore((state) => state);
+=======
+  const [loadingEscaneo, setLoadingEscaneo] = useState(false);
+  const { user, token } = useAuthStore((state) => state);
+>>>>>>> local
   const { data, error, fetchNextPage, hasNextPage, isInitialLoading, refetch } =
     useInfiniteQuery<AxiosResponse<IActivosRegistradosResponse>, Error>(
       ["activos-registrados"],
@@ -77,6 +86,7 @@ const Home = () => {
     const token = document.cookie.split(";").at(-1) as string;
 
     try {
+<<<<<<< development
       const response = await fetch(`${API_URL}/activo/${codigo}`, {
         headers: {
           authorization: token,
@@ -85,13 +95,46 @@ const Home = () => {
       if (!response.ok) {
         throw new Error(response.statusText);
       }
+=======
+      setLoadingEscaneo(true);
+      const response = await axios.get(
+        Endpoint.ACTIVO_FIJO.concat("/", codigo),
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+>>>>>>> local
 
-      const { activo } = await response.json();
+      console.log(response);
+      const {
+        data: { activo },
+      } = response;
 
+<<<<<<< development
       setEscaneados([...escaneados, activo]);
       setCodigo("");
     } catch (error) {
       Swal.showValidationMessage(`Error de escaneo: ${error}`);
+=======
+      if (activo) {
+        setEscaneados([...escaneados, activo]);
+        setCodigo("");
+      } else {
+        Swal.fire({
+          icon: "warning",
+          title: "Activo no encontrado",
+          confirmButtonColor: "green",
+        });
+      }
+    } catch (e) {
+      const error = e as AxiosError;
+      console.log(e);
+      Swal.fire(`${error.response?.data ?? "Error de conexión"}`, "warning");
+    } finally {
+      setLoadingEscaneo(false);
+>>>>>>> local
     }
   };
 
@@ -195,9 +238,7 @@ const Home = () => {
               <Col>
                 <SuggestCodigos />
               </Col>
-              <Col>
-                <SelectUsuarios />
-              </Col>
+              <Col>{/* <SelectUsuarios /> */}</Col>
             </Row>
           </Col>
         </Row>
@@ -321,6 +362,75 @@ const Home = () => {
           </Col>
         </Row>
       </Container>
+<<<<<<< development
+=======
+      <Button
+        variant={"success"}
+        className="position-fixed bottom-0 end-0 m-2"
+        onClick={() => setShow(true)}
+      >
+        Zebra
+      </Button>
+
+      <Modal
+        show={show}
+        onHide={() => setShow(false)}
+        backdrop="static"
+        keyboard={false}
+        size="lg"
+      >
+        <Modal.Header closeButton></Modal.Header>
+        <Modal.Body>
+          <Row>
+            <Col xs={9}>
+              <Form.Control
+                type="text"
+                placeholder="Escaneé un codigo"
+                value={codigo}
+                onChange={(e) => setCodigo(e.target.value)}
+              />
+            </Col>
+            <Col xs={3}>
+              <Button className="w-100" onClick={() => handleZebra(codigo)}>
+                Listo
+              </Button>
+            </Col>
+            <Col>
+              {loadingEscaneo ? (
+                <>buscando activo...</>
+              ) : (
+                escaneados.map((activo) => (
+                  <>
+                    <div className="border rounded-1 p-1 my-1 bg-primary-subtle d-flex flex-row justify-content-between">
+                      <div
+                        className="w-100 shadow-lg border rounded-1"
+                        onClick={() => showCode(activo)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        {activo.codigo}
+                      </div>
+                      <div
+                        className="btn-close"
+                        onClick={() => deleteEscaneado(activo.codigo)}
+                        key={crypto.randomUUID()}
+                      ></div>
+                    </div>
+                  </>
+                ))
+              )}
+            </Col>
+          </Row>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="danger" onClick={() => setShow(false)}>
+            Cerrar
+          </Button>
+          <Button variant="success" onClick={handleRegisterMany}>
+            Registrar todos
+          </Button>
+        </Modal.Footer>
+      </Modal>
+>>>>>>> local
     </>
   );
 };
