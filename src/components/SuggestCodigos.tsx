@@ -7,26 +7,29 @@ import Swal from "sweetalert2";
 import swal from "@sweetalert/with-react";
 import Activo from "./Activo";
 import { useState } from "react";
-import socket from "../socket";
 import { useAuthStore } from "../store/useAuthStore";
-
-const API_URL = import.meta.env.VITE_API_URL as string;
+import { Endpoint } from "../constants/endpoints";
+import axios from "../api/axios";
 
 const SuggestCodigos = () => {
   const { logout } = useAuthStore((state) => state);
   const [codigos, setCodigos] = useState<{ codigo: string }[]>([]);
   const [codigo, setCodigo] = useState("INRA-");
-  const { token } = useAuthStore((state) => state);
   const onSuggestionsFetchRequested = async ({
     value,
   }: Autosuggest.SuggestionsFetchRequestedParams) => {
     try {
-      const response = await fetch(`${API_URL}/activos/${value}`, {
-        headers: {
-          authorization: token,
+      const response = await axios.get(
+        Endpoint.ACTIVOS_FIJOS_BY_CODIGO.concat("/", value),
+        {
+          params: {
+            codigo,
+          },
         },
-      });
-      const { codigos } = await response.json();
+      );
+      const {
+        data: { codigos },
+      } = response;
       if (response.status === 200) {
         setCodigos(codigos);
       } else {
@@ -47,13 +50,10 @@ const SuggestCodigos = () => {
   };
 
   const fetchActivo = async (codigo: string) => {
-    const token = document.cookie.split(";").at(-1) as string;
-    const response = await fetch(`${API_URL}/activo/${codigo}`, {
-      headers: {
-        authorization: token,
-      },
-    });
-    const { activo } = await response.json();
+    const response = await axios.get(Endpoint.ACTIVO_FIJO.concat("/", codigo));
+    const {
+      data: { activo },
+    } = response;
 
     swal(<Activo activo={activo} />, {
       buttons: {
@@ -71,9 +71,9 @@ const SuggestCodigos = () => {
       },
     }).then((value: boolean) => {
       if (value) {
-        const user = JSON.parse(localStorage.getItem("user") as string);
-        const { piso } = JSON.parse(localStorage.getItem("config") as string);
-        socket.emit("activo@registrado", activo.codigo, user, piso);
+        // const user = JSON.parse(localStorage.getItem("user") as string);
+        // const { piso } = JSON.parse(localStorage.getItem("config") as string);
+        // socket.emit("activo@registrado", activo.codigo, user, piso);
       }
     });
 
