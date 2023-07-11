@@ -1,6 +1,8 @@
 import NavBar from "./components/NavBar";
 import { useAuthStore } from "./store/useAuthStore";
 import { Navigate } from "react-router-dom";
+import axios from "./api/axios";
+
 // function Code() {
 //   const barcodeRef = useRef(null);
 //   const [barcode, setBarcode] = useState("");
@@ -38,11 +40,17 @@ import { Navigate } from "react-router-dom";
 // }
 
 function App() {
-  const { isAuth } = useAuthStore((state) => state);
+  const { isAuth, token } = useAuthStore((state) => state);
 
   if (!isAuth) {
     return <Navigate to="/login" />;
   }
+
+  axios.interceptors.request.use((config) => {
+    config.headers.Authorization = token;
+
+    return config;
+  });
 
   return <NavBar />;
 }

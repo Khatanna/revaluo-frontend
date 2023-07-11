@@ -1,4 +1,5 @@
 import { Form } from "react-bootstrap";
+import { useAuthStore } from "../store/useAuthStore";
 
 const pisos = [
   "PLANTA BAJA",
@@ -12,28 +13,28 @@ const pisos = [
 
 const SelectPisos = ({
   onChange,
-  form,
+  piso,
 }: {
   onChange: (name: string, value: string) => void;
-  form: { color: string; nombre: string; piso: string };
+  piso?: string;
 }) => {
   return (
     <Form.Select
       required
       name="piso"
-      value={form.piso}
       onChange={({ target: { name, value } }) => onChange(name, value)}
     >
       <option value="" selected disabled>
-        {localStorage.getItem("piso") ?? "Elije el piso"}
+        Elije el piso
       </option>
-      {pisos.map((piso) => (
+      {pisos.map((p) => (
         <option
           key={crypto.randomUUID()}
-          defaultValue={piso}
-          selected={localStorage.getItem("piso") === piso}
+          // defaultValue={p}
+          value={p}
+          selected={piso === p}
         >
-          {piso}
+          {p}
         </option>
       ))}
     </Form.Select>

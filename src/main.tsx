@@ -3,13 +3,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import { App, ActivoFaltante, Config, Login, NotFound, Home } from "./lazy";
-import axios from "axios";
 import Spinner from "./components/Spinner";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "./index.css";
+
 const queryClient = new QueryClient();
-const API_URL = import.meta.env.VITE_API_URL;
-axios.defaults.baseURL = API_URL;
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <Suspense
@@ -31,7 +28,6 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           <Route path="/login" element={<Login />}></Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
-        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </QueryClientProvider>
     </BrowserRouter>
   </Suspense>,

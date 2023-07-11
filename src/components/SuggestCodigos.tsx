@@ -7,33 +7,25 @@ import Swal from "sweetalert2";
 import swal from "@sweetalert/with-react";
 import Activo from "./Activo";
 import { useState } from "react";
-import socket from "../socket";
 import { useAuthStore } from "../store/useAuthStore";
 import { Endpoint } from "../constants/endpoints";
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL as string;
+import axios from "../api/axios";
 
 const SuggestCodigos = () => {
   const { logout } = useAuthStore((state) => state);
   const [codigos, setCodigos] = useState<{ codigo: string }[]>([]);
   const [codigo, setCodigo] = useState("INRA-");
-  const { token } = useAuthStore((state) => state);
   const onSuggestionsFetchRequested = async ({
     value,
   }: Autosuggest.SuggestionsFetchRequestedParams) => {
     try {
-      console.log(value);
       const response = await axios.get(
         Endpoint.ACTIVOS_FIJOS_BY_CODIGO.concat("/", value),
         {
-          headers: {
-            authorization: token,
-          },
           params: {
             codigo,
           },
-        }
+        },
       );
       const {
         data: { codigos },
@@ -58,11 +50,7 @@ const SuggestCodigos = () => {
   };
 
   const fetchActivo = async (codigo: string) => {
-    const response = await axios.get(Endpoint.ACTIVO_FIJO.concat("/", codigo), {
-      headers: {
-        authorization: token,
-      },
-    });
+    const response = await axios.get(Endpoint.ACTIVO_FIJO.concat("/", codigo));
     const {
       data: { activo },
     } = response;
