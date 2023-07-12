@@ -34,7 +34,7 @@ export const useAuthStore = create<State & Actions>()(
   middlewares((set, get) => ({
     ...initialState,
     login: (user: IUsuario, token: string) => {
-      set({ ...get(), token, user, isAuth: true });
+      set({ token, user: { ...user }, isAuth: true });
     },
     logout: () => {
       set(initialState);

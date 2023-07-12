@@ -68,7 +68,7 @@ function App() {
       }
 
       return Promise.reject(error);
-    }
+    },
   );
 
   return <NavBar />;

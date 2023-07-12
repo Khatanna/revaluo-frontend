@@ -19,7 +19,7 @@ export interface IActivoRegistrado {
   activoFijo: IActivo;
   usuario: IUsuario;
   piso: string;
-  imprimir: boolean
+  imprimir: boolean;
 }
 
 export interface IActivosRegistradosResponse {
@@ -40,4 +40,8 @@ export interface IUserResponse {
 
 export interface IForm {
   [index: string]: string;
+}
+
+export interface IScanned extends IActivo {
+  print: boolean;
 }

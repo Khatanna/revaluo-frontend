@@ -1,33 +1,44 @@
 import { Row, Col, Button, Modal, Form } from "react-bootstrap";
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { IActivo } from "../types";
+import { IScanned } from "../types";
 import { Endpoint } from "../constants/endpoints";
 import axios from "../api/axios";
 import Swal from "sweetalert2";
 import { AxiosError } from "axios";
 import { showCode } from "./ActivoRegistrado";
-
-interface Escaneo extends IActivo {
-  print: boolean;
-}
+import { useScannedStore } from "../store/useScannedStore";
 
 const ModalRegisterMany = () => {
   const { user, piso } = useAuthStore((state) => state);
-
+  const {
+    scanned,
+    addScanned,
+    deleteScanned,
+    resetState,
+    checkScanned,
+    exist,
+  } = useScannedStore((state) => state);
   const [show, setShow] = useState(false);
   const [codigo, setCodigo] = useState("");
   const [loadingEscaneo, setLoadingEscaneo] = useState(false);
-  const [escaneados, setEscaneados] = useState<Escaneo[]>([]);
+  const [draggedItem, setDraggedItem] = useState<IScanned | null>(null);
+
   const handleZebra = async (codigo: string, print: boolean) => {
     try {
+      if (exist(codigo)) {
+        throw Error(
+          `El activo con el codigo (${codigo}) ya esta en la lista, pero aun no esta registrado`,
+        );
+      }
+
       setLoadingEscaneo(true);
       const {
         data: { activo },
       } = await axios.get(Endpoint.REGISTER_MANY_ACTIVO.concat("/", codigo));
 
       if (activo) {
-        setEscaneados([...escaneados, { ...activo, print }]);
+        addScanned({ ...activo, print });
         setCodigo("");
       } else {
         Swal.fire({
@@ -38,7 +49,12 @@ const ModalRegisterMany = () => {
       }
     } catch (e) {
       const error = e as AxiosError;
-      Swal.fire(`${error.response?.data ?? "Error de conexión"}`, "warning");
+
+      Swal.fire({
+        icon: "warning",
+        title: "Error al listar",
+        text: `${error.message ?? "Error de conexión"}`,
+      });
     } finally {
       setLoadingEscaneo(false);
     }
@@ -46,27 +62,34 @@ const ModalRegisterMany = () => {
 
   const handleRegisterMany = async () => {
     await axios.post(Endpoint.REGISTER_MANY_ACTIVO, {
-      activos: escaneados,
+      activos: scanned,
       user,
       piso,
     });
 
-    setEscaneados([]);
+    resetState;
   };
 
-  const deleteEscaneado = (codigo: string) => {
-    setEscaneados(escaneados.filter((e) => e.codigo !== codigo));
+  const handleDragStart = (
+    _: React.DragEvent<HTMLDivElement>,
+    item: IScanned,
+  ) => {
+    setDraggedItem(item);
   };
 
-  const handleCheckItem = (index: number) => {
-    setEscaneados(
-      escaneados.map((e, i) => {
-        if (i === index) {
-          e.print = !e.print;
-        }
-        return e;
-      })
-    );
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  };
+
+  const handleDrop = (
+    event: React.DragEvent<HTMLDivElement>,
+    index: number,
+  ) => {
+    event.preventDefault();
+    const itemIndex = scanned.indexOf(draggedItem!);
+    scanned.splice(itemIndex, 1);
+    scanned.splice(index, 0, draggedItem!);
+    setDraggedItem(null);
   };
 
   return (
@@ -107,31 +130,58 @@ const ModalRegisterMany = () => {
             </Col>
             <Col>
               {loadingEscaneo ? (
-                <div className="fw-bold ">Buscando activo...</div>
+                <div className="fw-bold ms-1">Buscando activo...</div>
               ) : (
-                escaneados.map((activo, index) => (
-                  <div key={crypto.randomUUID()}>
+                scanned.map((activo, index) => (
+                  <div
+                    key={crypto.randomUUID()}
+                    draggable
+                    onDragStart={(event) => handleDragStart(event, activo)}
+                    onDragOver={handleDragOver}
+                    onDrop={(event) => handleDrop(event, index)}
+                  >
                     <div className="border rounded-1 p-1 my-1 bg-primary-subtle d-flex flex-row justify-content-between align-items-center gap-1">
-                      <div className="input-group-text bg-primary-subtle shadow-lg p-1">
-                        <input
-                          className="form-check-input mt-0"
-                          type="checkbox"
-                          checked={activo.print}
-                          onChange={() => handleCheckItem(index)}
-                        />
-                        🖨️
+                      {/* <div className="input-group-text bg-primary-subtle shadow-lg p-1">
+                        <label htmlFor={`print${index}`}>
+                          🖨️
+                          <input
+                            className="form-check-input mt-0"
+                            type="checkbox"
+                            id={`print${index}`}
+                            checked={activo.print}
+                            onChange={() => checkScanned(index)}
+                          />
+                        </label>
+                      </div> */}
+                      <div className="w-100 shadow-lg rounded-1 px-2 py-1">
+                        <div>
+                          <strong>Codigo:</strong>
+                          <small> {activo.codigo}</small>
+                        </div>
+                        <div>
+                          <strong>Responsable:</strong>
+                          <small> {activo.responsable}</small>
+                        </div>
+
+                        <div
+                          className="nav-link text-success"
+                          onClick={() => showCode(activo)}
+                        >
+                          <strong>Detalles</strong>
+                        </div>
                       </div>
-                      <div
-                        className="w-100 shadow-lg rounded-1 px-2 py-1"
-                        onClick={() => showCode(activo)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        {activo.codigo}
+                      <div className="d-flex justify-content-between flex-column h-100 border border-1">
+                        <div
+                          className="btn-close"
+                          onClick={() => deleteScanned(activo.codigo)}
+                        ></div>
+                        <div
+                          className="text-success"
+                          onClick={() => checkScanned(index)}
+                        >
+                          🖨️
+                        </div>
                       </div>
-                      <div
-                        className="btn-close"
-                        onClick={() => deleteEscaneado(activo.codigo)}
-                      ></div>
                     </div>
                   </div>
                 ))

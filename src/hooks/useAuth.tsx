@@ -13,15 +13,13 @@ const mutationFnLogin: MutationFunction<
   return await fetchLogin(form);
 };
 
-const mutationFnLogout: MutationFunction<AxiosResponse, string> = async (
-  token: string
-) => {
-  return await fetchLogout(token);
+const mutationFnLogout: MutationFunction<AxiosResponse> = async () => {
+  return await fetchLogout();
 };
 
 const useAuth = () => {
   const { login: loginStore, logout: logoutStore } = useAuthStore(
-    (state) => state
+    (state) => state,
   );
 
   const { mutate: login, isLoading: isLoadingLogin } = useMutation<
@@ -54,15 +52,15 @@ const useAuth = () => {
     unknown
   >({
     mutationFn: mutationFnLogout,
-    onSuccess: () => {
-      logoutStore();
-    },
+    onSuccess: logoutStore,
     onError: (error) => {
       Swal.fire({
         icon: "warning",
         title:
           error.code === AxiosError.ERR_NETWORK
             ? "Error de conexion"
+            : error.code === AxiosError.ERR_BAD_REQUEST
+            ? "Error en las credenciales"
             : "Error, al intentar cerrar la sesión",
         confirmButtonText: "Aceptar",
         confirmButtonColor: "green",
