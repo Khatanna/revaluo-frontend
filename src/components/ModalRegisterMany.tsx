@@ -28,7 +28,7 @@ const ModalRegisterMany = () => {
     try {
       if (exist(codigo)) {
         throw Error(
-          `El activo con el codigo (${codigo}) ya esta en la lista, pero aun no esta registrado`,
+          `El activo con el codigo (${codigo}) ya esta en la lista, pero aun no esta registrado`
         );
       }
 
@@ -57,6 +57,7 @@ const ModalRegisterMany = () => {
       });
     } finally {
       setLoadingEscaneo(false);
+      setCodigo("");
     }
   };
 
@@ -72,7 +73,7 @@ const ModalRegisterMany = () => {
 
   const handleDragStart = (
     _: React.DragEvent<HTMLDivElement>,
-    item: IScanned,
+    item: IScanned
   ) => {
     setDraggedItem(item);
   };
@@ -83,13 +84,22 @@ const ModalRegisterMany = () => {
 
   const handleDrop = (
     event: React.DragEvent<HTMLDivElement>,
-    index: number,
+    index: number
   ) => {
     event.preventDefault();
     const itemIndex = scanned.indexOf(draggedItem!);
     scanned.splice(itemIndex, 1);
     scanned.splice(index, 0, draggedItem!);
     setDraggedItem(null);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // console.log(e.target.value, e.target.value.match(/^INRA-\d{2}-\d{5}$/));
+    if (e.target.value.match(/^INRA-\d{2}-\d{5}$/)?.length) {
+      handleZebra(codigo.concat(e.target.value), false);
+    }
+
+    setCodigo(e.target.value.toUpperCase());
   };
 
   return (
@@ -117,7 +127,7 @@ const ModalRegisterMany = () => {
                 type="text"
                 placeholder="Escaneé un codigo"
                 value={codigo}
-                onChange={(e) => setCodigo(e.target.value.toUpperCase())}
+                onChange={handleChange}
               />
             </Col>
             <Col xs={3}>
