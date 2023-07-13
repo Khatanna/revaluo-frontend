@@ -27,6 +27,7 @@ const ModalRegisterMany = () => {
   const handleZebra = async (codigo: string, print: boolean) => {
     try {
       if (exist(codigo)) {
+        setCodigo("");
         throw Error(
           `El activo con el codigo (${codigo}) ya esta en la lista, pero aun no esta registrado`
         );
@@ -96,7 +97,7 @@ const ModalRegisterMany = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // console.log(e.target.value, e.target.value.match(/^INRA-\d{2}-\d{5}$/));
     if (e.target.value.match(/^INRA-\d{2}-\d{5}$/)?.length) {
-      handleZebra(codigo.concat(e.target.value), false);
+      handleZebra(e.target.value.trim(), false);
     }
 
     setCodigo(e.target.value.toUpperCase());
