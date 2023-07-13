@@ -64,12 +64,12 @@ const ModalRegisterMany = () => {
 
   const handleRegisterMany = async () => {
     await axios.post(Endpoint.REGISTER_MANY_ACTIVO, {
-      activos: scanned,
+      activos: scanned.reverse(),
       user,
       piso,
     });
 
-    resetState;
+    resetState();
   };
 
   const handleDragStart = (

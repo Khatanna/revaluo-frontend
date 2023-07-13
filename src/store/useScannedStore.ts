@@ -30,7 +30,7 @@ export const useScannedStore = create<State & Actions>()(
     ...initialState,
     addScanned: (activo) => {
       set({
-        scanned: [...get().scanned, activo],
+        scanned: [activo, ...get().scanned],
       });
     },
     checkScanned: (index) => {
