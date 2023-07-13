@@ -1,5 +1,4 @@
 import { type IActivo } from "../types";
-import BarcodeActivo from "./BarcodeActivo";
 
 const Activo = ({ activo }: { activo: IActivo }) => {
   const condicion: { [index: string]: string } = {
@@ -21,7 +20,13 @@ const Activo = ({ activo }: { activo: IActivo }) => {
             </span>
           </div>
           <div>
+            <strong>Codigo:</strong> {activo.codigo}
+          </div>
+          <div>
             <strong>Tipo:</strong> {activo.tipo}
+          </div>
+          <div>
+            <strong>Rubro:</strong> {activo.rubro}
           </div>
           <div>
             <strong>Piso:</strong> {activo.piso}
@@ -41,9 +46,9 @@ const Activo = ({ activo }: { activo: IActivo }) => {
             </span>
           </div>
         </div>
-        <div className="border border-1 rounded-1 overflow-x-hidden">
+        {/* <div className="border border-1 rounded-1 overflow-x-hidden">
           <BarcodeActivo activoFijo={activo} />
-        </div>
+        </div> */}
       </div>
     </>
   );

@@ -1,5 +1,6 @@
 export interface IActivo {
   responsable: string;
+  descripcion: string;
   tipo: string;
   piso: string;
   ubicacion: string;
@@ -20,6 +21,7 @@ export interface IActivoRegistrado {
   usuario: IUsuario;
   piso: string;
   imprimir: boolean;
+  observacion: string;
 }
 
 export interface IActivosRegistradosResponse {

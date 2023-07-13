@@ -117,7 +117,7 @@ const ModalRegisterMany = () => {
                 type="text"
                 placeholder="Escaneé un codigo"
                 value={codigo}
-                onChange={(e) => setCodigo(e.target.value)}
+                onChange={(e) => setCodigo(e.target.value.toUpperCase())}
               />
             </Col>
             <Col xs={3}>
@@ -141,9 +141,11 @@ const ModalRegisterMany = () => {
                     onDrop={(event) => handleDrop(event, index)}
                   >
                     <div className="border rounded-1 p-1 my-1 bg-primary-subtle d-flex flex-row justify-content-between align-items-center gap-1">
-                      {/* <div className="input-group-text bg-primary-subtle shadow-lg p-1">
-                        <label htmlFor={`print${index}`}>
-                          🖨️
+                      <div className="input-group-text bg-primary-subtle shadow-lg p-1">
+                        <label
+                          htmlFor={`print${index}`}
+                          className="d-flex justify-content-between flex-column gap-2 align-items-center"
+                        >
                           <input
                             className="form-check-input mt-0"
                             type="checkbox"
@@ -151,8 +153,9 @@ const ModalRegisterMany = () => {
                             checked={activo.print}
                             onChange={() => checkScanned(index)}
                           />
+                          <div>🖨️</div>
                         </label>
-                      </div> */}
+                      </div>
                       <div className="w-100 shadow-lg rounded-1 px-2 py-1">
                         <div>
                           <strong>Codigo:</strong>
@@ -162,26 +165,22 @@ const ModalRegisterMany = () => {
                           <strong>Responsable:</strong>
                           <small> {activo.responsable}</small>
                         </div>
-
-                        <div
-                          className="nav-link text-success"
-                          onClick={() => showCode(activo)}
-                        >
-                          <strong>Detalles</strong>
+                        <div className="d-flex justify-content-between ">
+                          <div
+                            className="nav-link text-success"
+                            onClick={() => showCode(activo)}
+                          >
+                            <strong>Detalles</strong>
+                          </div>
+                          <div className="nav-link text-primary">
+                            <strong>Observaciones</strong>
+                          </div>
                         </div>
                       </div>
-                      <div className="d-flex justify-content-between flex-column h-100 border border-1">
-                        <div
-                          className="btn-close"
-                          onClick={() => deleteScanned(activo.codigo)}
-                        ></div>
-                        <div
-                          className="text-success"
-                          onClick={() => checkScanned(index)}
-                        >
-                          🖨️
-                        </div>
-                      </div>
+                      <div
+                        className="btn-close"
+                        onClick={() => deleteScanned(activo.codigo)}
+                      ></div>
                     </div>
                   </div>
                 ))

@@ -4,6 +4,7 @@ import { IScanned } from "../types";
 
 interface State {
   scanned: IScanned[];
+  group: string;
 }
 
 interface Actions {
@@ -18,6 +19,7 @@ type ScannedState = State & Actions;
 
 const initialState: State = {
   scanned: [],
+  group: "",
 };
 
 const middlewares = (f: StateCreator<ScannedState>) =>
@@ -27,11 +29,12 @@ export const useScannedStore = create<State & Actions>()(
   middlewares((set, get) => ({
     ...initialState,
     addScanned: (activo) => {
-      get().scanned.push(activo);
+      set({
+        scanned: [...get().scanned, activo],
+      });
     },
     checkScanned: (index) => {
       set({
-        ...get(),
         scanned: get().scanned.map((scanned, i) => {
           if (index === i) {
             scanned.print = !scanned.print;
