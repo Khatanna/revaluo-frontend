@@ -54,7 +54,7 @@ const ModalRegisterMany = () => {
       Swal.fire({
         icon: "warning",
         title: "Error al listar",
-        text: `${error.message ?? "Error de conexión"}`,
+        text: `Activo duplicado` + error.response?.data ?? "",
       });
     } finally {
       setLoadingEscaneo(false);
